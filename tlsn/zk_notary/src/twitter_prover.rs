@@ -5,7 +5,6 @@ use hyper::{body::to_bytes, client::conn::Parts, Body, Request, StatusCode};
 use rustls::{Certificate, ClientConfig, RootCertStore};
 use serde::{Deserialize, Serialize};
 use std::{env, fs::File as StdFile, io::BufReader, ops::Range, sync::Arc};
-use tlsn_core::proof::TlsProof;
 use tokio::{fs::File, net::TcpStream};
 use tokio_rustls::TlsConnector;
 use tokio_util::compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt};
@@ -14,9 +13,11 @@ use tracing::debug;
 use tlsn_prover::tls::{Prover, ProverConfig};
 
 // Setting of the application server
-const SERVER_DOMAIN: &str = "discord.com";
+const SERVER_DOMAIN: &str = "twitter.com";
+const ROUTE: &str = "i/api/1.1/dm/conversation";
+const USER_AGENT: &str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
 
-// Setting of the notary server
+// Setting of the notary server — make sure these are the same with those in ../../../notary-server
 const NOTARY_HOST: &str = "127.0.0.1";
 const NOTARY_PORT: u16 = 7047;
 const NOTARY_CA_CERT_PATH: &str = "./src/rootCA.crt";
@@ -52,11 +53,13 @@ pub enum ClientType {
 pub async fn notarize() -> impl Responder {
     tracing_subscriber::fmt::init();
 
-    // Load secret variables frome environment for discord server connection
+    // Load secret variables frome environment for twitter server connection
     dotenv::dotenv().ok();
-    let channel_id = env::var("CHANNEL_ID").unwrap();
-    let auth_token = env::var("AUTHORIZATION").unwrap();
-    let user_agent = env::var("USER_AGENT").unwrap();
+    let conversation_id = env::var("CONVERSATION_ID").unwrap();
+    let client_uuid = env::var("CLIENT_UUID").unwrap();
+    let auth_token = env::var("AUTH_TOKEN").unwrap();
+    let access_token = env::var("ACCESS_TOKEN").unwrap();
+    let csrf_token = env::var("CSRF_TOKEN").unwrap();
 
     let (notary_tls_socket, session_id) = setup_notary_connection().await;
 
@@ -76,7 +79,6 @@ pub async fn notarize() -> impl Responder {
     let client_socket = tokio::net::TcpStream::connect((SERVER_DOMAIN, 443))
         .await
         .unwrap();
-    println!("Connected to the Notary");
 
     // Bind the Prover to server connection
     let (tls_connection, prover_fut) = prover.connect(client_socket.compat()).await.unwrap();
@@ -95,29 +97,35 @@ pub async fn notarize() -> impl Responder {
     // Build the HTTP request to fetch the DMs
     let request = Request::builder()
         .uri(format!(
-            "https://{SERVER_DOMAIN}/api/v9/channels/{channel_id}/messages?limit=2"
+            "https://{SERVER_DOMAIN}/{ROUTE}/{conversation_id}.json"
         ))
         .header("Host", SERVER_DOMAIN)
         .header("Accept", "*/*")
-        .header("Accept-Language", "en-US,en;q=0.5")
         .header("Accept-Encoding", "identity")
-        .header("User-Agent", user_agent)
-        .header("Authorization", &auth_token)
         .header("Connection", "close")
+        .header("User-Agent", USER_AGENT)
+        .header("Authorization", format!("Bearer {access_token}"))
+        .header(
+            "Cookie",
+            format!("auth_token={auth_token}; ct0={csrf_token}"),
+        )
+        .header("Authority", SERVER_DOMAIN)
+        .header("X-Twitter-Auth-Type", "OAuth2Session")
+        .header("x-twitter-active-user", "yes")
+        .header("X-Client-Uuid", client_uuid)
+        .header("X-Csrf-Token", csrf_token.clone())
         .body(Body::empty())
         .unwrap();
 
     debug!("Sending request");
-    println!("Starting an MPC TLS connection with the Discord server");
 
     let response = request_sender.send_request(request).await.unwrap();
 
     debug!("Sent request");
 
-    assert!(response.status() == StatusCode::OK, "{}", response.status());
+    assert!(response.status() == StatusCode::OK);
 
     debug!("Request OK");
-    println!("Got a response from the Discord server");
 
     // Pretty printing :)
     let payload = to_bytes(response.into_body()).await.unwrap().to_vec();
@@ -136,53 +144,35 @@ pub async fn notarize() -> impl Responder {
     let mut prover = prover.start_notarize();
 
     // Identify the ranges in the transcript that contain secrets
-    let (public_ranges, private_ranges) =
-        find_ranges(prover.sent_transcript().data(), &[auth_token.as_bytes()]);
+    let (public_ranges, private_ranges) = find_ranges(
+        prover.sent_transcript().data(),
+        &[
+            access_token.as_bytes(),
+            auth_token.as_bytes(),
+            csrf_token.as_bytes(),
+        ],
+    );
 
     let recv_len = prover.recv_transcript().data().len();
 
     let builder = prover.commitment_builder();
 
-    // Collect commitment ids for the outbound transcript
-    let mut commitment_ids = public_ranges
-        .iter()
-        .chain(private_ranges.iter())
-        .map(|range| builder.commit_sent(range.clone()).unwrap())
-        .collect::<Vec<_>>();
+    // Commit to the outbound transcript, isolating the data that contain secrets
+    for range in public_ranges.iter().chain(private_ranges.iter()) {
+        builder.commit_sent(range.clone()).unwrap();
+    }
 
     // Commit to the full received transcript in one shot, as we don't need to redact anything
-    commitment_ids.push(builder.commit_recv(0..recv_len).unwrap());
+    builder.commit_recv(0..recv_len).unwrap();
 
     // Finalize, returning the notarized session
     let notarized_session = prover.finalize().await.unwrap();
 
     debug!("Notarization complete!");
-    println!("Notarization completed successfully!");
-
-    let session_proof = notarized_session.session_proof();
-
-    let mut proof_builder = notarized_session.data().build_substrings_proof();
-
-    // Reveal everything but the auth token (which was assigned commitment id 2)
-    proof_builder.reveal(commitment_ids[0]).unwrap();
-    proof_builder.reveal(commitment_ids[1]).unwrap();
-    proof_builder.reveal(commitment_ids[3]).unwrap();
-
-    let substrings_proof = proof_builder.build().unwrap();
-
-    let proof = TlsProof {
-        session: session_proof,
-        substrings: substrings_proof,
-    };
-
-    let res = serde_json::json!({
-      "proof": proof,
-      "notarized_session": notarized_session
-    });
 
     HttpResponse::Ok()
         .content_type("application/json")
-        .body(serde_json::to_string_pretty(&res).unwrap())
+        .body(serde_json::to_string_pretty(&notarized_session).unwrap())
 }
 
 async fn setup_notary_connection() -> (tokio_rustls::client::TlsStream<TcpStream>, String) {
