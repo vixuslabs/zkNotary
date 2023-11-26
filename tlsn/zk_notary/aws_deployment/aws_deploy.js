@@ -15,23 +15,25 @@ async function deployTLSNotaryServer() {
     // Other configurations like block device mappings, IAM roles, etc.
 };
 
+    const runCommand = new RunInstancesCommand(instanceParams);
+    const instanceResponse = await ec2Client.send(runCommand);
+    const instanceId = instanceResponse.Instances[0].InstanceId;
 
-    // const runCommand = new RunInstancesCommand(instanceParams);
-    // const instanceResponse = await ec2Client.send(runCommand);
-    // const instanceId = instanceResponse.Instances[0].InstanceId;
+    await new Promise(resolve => setTimeout(resolve, 60000)); // Wait for instance to initialize
 
-    // await new Promise(resolve => setTimeout(resolve, 60000)); // Wait for instance to initialize
-
-    // const describeCommand = new DescribeInstancesCommand({ InstanceIds: [instanceId] });
-    // const describeResponse = await ec2Client.send(describeCommand);
-    // const publicDNS = describeResponse.Reservations[0].Instances[0].PublicDnsName;
-    const publicDNS = "ec2-54-83-100-219.compute-1.amazonaws.com"
+    const describeCommand = new DescribeInstancesCommand({ InstanceIds: [instanceId] });
+    const describeResponse = await ec2Client.send(describeCommand);
+    const publicDNS = describeResponse.Reservations[0].Instances[0].PublicDnsName;
 
     const setupCommands = `
+        echo "nameserver 8.8.8.8" | sudo tee -a /etc/resolv.conf > /dev/null
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         source $HOME/.cargo/env
         git clone https://github.com/tlsnotary/tlsn.git
         cd tlsn/notary-server
+        sudo DEBIAN_FRONTEND=noninteractive sudo apt-get update
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential
+        sudo DEBIAN_FRONTEND=noninteractive apt install -y pkg-config libssl-dev
         cargo run --release
     `;
 
