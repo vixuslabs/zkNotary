@@ -4,18 +4,18 @@ use futures::AsyncWriteExt;
 use hyper::{body::to_bytes, client::conn::Parts, Body, Request, StatusCode};
 use rustls::{Certificate, ClientConfig, RootCertStore};
 use serde::{Deserialize, Serialize};
-use std::{env, error::Error, fs::File as StdFile, io::BufReader, ops::Range, sync::Arc};
+use std::{env, fs::File as StdFile, io::BufReader, ops::Range, sync::Arc};
 use tokio::{fs::File, net::TcpStream};
 use tokio_rustls::TlsConnector;
 use tokio_util::compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt};
 use tracing::debug;
-use url::Url;
 
 use tlsn_prover::tls::{Prover, ProverConfig};
 
 // Setting of the application server
-const SERVER_DOMAIN: &str = "api.twitter.com";
-const ROUTE: &str = "2/tweets";
+const SERVER_DOMAIN: &str = "twitter.com";
+const ROUTE: &str = "i/api/1.1/dm/conversation";
+const USER_AGENT: &str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
 
 // Setting of the notary server — make sure these are the same with those in ../../../notary-server
 const NOTARY_HOST: &str = "127.0.0.1";
@@ -51,14 +51,15 @@ pub enum ClientType {
 }
 
 pub async fn notarize() -> impl Responder {
-    let tweet_url = "https://twitter.com/mathy782/status/1670919907687505920";
-    let tweet_id = extract_tweet_id(tweet_url);
-
     tracing_subscriber::fmt::init();
 
     // Load secret variables frome environment for twitter server connection
     dotenv::dotenv().ok();
-    let bearer_token = env::var("TWITTER_BEARER_TOKEN").unwrap();
+    let conversation_id = env::var("CONVERSATION_ID").unwrap();
+    let client_uuid = env::var("CLIENT_UUID").unwrap();
+    let auth_token = env::var("AUTH_TOKEN").unwrap();
+    let access_token = env::var("ACCESS_TOKEN").unwrap();
+    let csrf_token = env::var("CSRF_TOKEN").unwrap();
 
     let (notary_tls_socket, session_id) = setup_notary_connection().await;
 
@@ -79,8 +80,6 @@ pub async fn notarize() -> impl Responder {
         .await
         .unwrap();
 
-    println!("Connected to the Notary");
-
     // Bind the Prover to server connection
     let (tls_connection, prover_fut) = prover.connect(client_socket.compat()).await.unwrap();
 
@@ -98,26 +97,27 @@ pub async fn notarize() -> impl Responder {
     // Build the HTTP request to fetch the DMs
     let request = Request::builder()
         .uri(format!(
-            "https://{}/{}/{}",
-            SERVER_DOMAIN,
-            ROUTE,
-            tweet_id.unwrap()
+            "https://{SERVER_DOMAIN}/{ROUTE}/{conversation_id}.json"
         ))
         .header("Host", SERVER_DOMAIN)
-        // .header("Accept", "*/*")
-        // .header("Accept-Encoding", "identity")
+        .header("Accept", "*/*")
+        .header("Accept-Encoding", "identity")
         .header("Connection", "close")
-        .header("Authorization", format!("Bearer {bearer_token}"))
-        // .header("Authority", SERVER_DOMAIN)
-        // .header("X-Twitter-Auth-Type", "OAuth2Session")
-        // .header("x-twitter-active-user", "yes")
-        // .header("X-Client-Uuid", client_uuid)
-        // .header("X-Csrf-Token", csrf_token.clone())
+        .header("User-Agent", USER_AGENT)
+        .header("Authorization", format!("Bearer {access_token}"))
+        .header(
+            "Cookie",
+            format!("auth_token={auth_token}; ct0={csrf_token}"),
+        )
+        .header("Authority", SERVER_DOMAIN)
+        .header("X-Twitter-Auth-Type", "OAuth2Session")
+        .header("x-twitter-active-user", "yes")
+        .header("X-Client-Uuid", client_uuid)
+        .header("X-Csrf-Token", csrf_token.clone())
         .body(Body::empty())
         .unwrap();
 
     debug!("Sending request");
-    println!("Starting an MPC TLS connection with the Twitter server");
 
     let response = request_sender.send_request(request).await.unwrap();
 
@@ -126,7 +126,6 @@ pub async fn notarize() -> impl Responder {
     assert!(response.status() == StatusCode::OK);
 
     debug!("Request OK");
-    println!("Got a response from the Twitter server");
 
     // Pretty printing :)
     let payload = to_bytes(response.into_body()).await.unwrap().to_vec();
@@ -137,7 +136,6 @@ pub async fn notarize() -> impl Responder {
     // Close the connection to the server
     let mut client_socket = connection_task.await.unwrap().unwrap().io.into_inner();
     client_socket.close().await.unwrap();
-    print!("Closed the connection to the Twitter server");
 
     // The Prover task should be done now, so we can grab it.
     let prover = prover_task.await.unwrap().unwrap();
@@ -146,8 +144,14 @@ pub async fn notarize() -> impl Responder {
     let mut prover = prover.start_notarize();
 
     // Identify the ranges in the transcript that contain secrets
-    let (public_ranges, private_ranges) =
-        find_ranges(prover.sent_transcript().data(), &[bearer_token.as_bytes()]);
+    let (public_ranges, private_ranges) = find_ranges(
+        prover.sent_transcript().data(),
+        &[
+            access_token.as_bytes(),
+            auth_token.as_bytes(),
+            csrf_token.as_bytes(),
+        ],
+    );
 
     let recv_len = prover.recv_transcript().data().len();
 
@@ -165,7 +169,6 @@ pub async fn notarize() -> impl Responder {
     let notarized_session = prover.finalize().await.unwrap();
 
     debug!("Notarization complete!");
-    println!("Notarization completed successfully!");
 
     HttpResponse::Ok()
         .content_type("application/json")
@@ -319,14 +322,4 @@ fn find_ranges(seq: &[u8], sub_seq: &[&[u8]]) -> (Vec<Range<usize>>, Vec<Range<u
 async fn read_pem_file(file_path: &str) -> Result<BufReader<StdFile>> {
     let key_file = File::open(file_path).await?.into_std().await;
     Ok(BufReader::new(key_file))
-}
-
-fn extract_tweet_id(tweet_url: &str) -> Result<String, Box<dyn Error>> {
-    let url = Url::parse(tweet_url)?;
-    let path_segments = url.path_segments().ok_or("Invalid URL")?;
-    let tweet_id = path_segments
-        .last()
-        .ok_or("Invalid URL: No tweet ID found")?;
-
-    Ok(tweet_id.to_string())
 }
