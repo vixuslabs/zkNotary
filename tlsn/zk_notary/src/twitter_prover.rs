@@ -1,4 +1,4 @@
-use actix_web::{HttpResponse, Responder};
+use actix_web::{web, HttpResponse, Responder};
 use eyre::Result;
 use futures::AsyncWriteExt;
 use hyper::{body::to_bytes, client::conn::Parts, Body, Request, StatusCode};
@@ -50,8 +50,13 @@ pub enum ClientType {
     Websocket,
 }
 
-pub async fn notarize() -> impl Responder {
-    let tweet_url = "https://twitter.com/mathy782/status/1670919907687505920";
+#[derive(serde::Deserialize)]
+pub struct QueryParams {
+    tweet_url: String,
+}
+
+pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
+    let tweet_url = &query_params.tweet_url;
     let tweet_id = extract_tweet_id(tweet_url);
 
     tracing_subscriber::fmt::init();
@@ -104,15 +109,8 @@ pub async fn notarize() -> impl Responder {
             tweet_id.unwrap()
         ))
         .header("Host", SERVER_DOMAIN)
-        // .header("Accept", "*/*")
-        // .header("Accept-Encoding", "identity")
         .header("Connection", "close")
         .header("Authorization", format!("Bearer {bearer_token}"))
-        // .header("Authority", SERVER_DOMAIN)
-        // .header("X-Twitter-Auth-Type", "OAuth2Session")
-        // .header("x-twitter-active-user", "yes")
-        // .header("X-Client-Uuid", client_uuid)
-        // .header("X-Csrf-Token", csrf_token.clone())
         .body(Body::empty())
         .unwrap();
 
