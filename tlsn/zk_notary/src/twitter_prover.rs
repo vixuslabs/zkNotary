@@ -5,6 +5,7 @@ use hyper::{body::to_bytes, client::conn::Parts, Body, Request, StatusCode};
 use rustls::{Certificate, ClientConfig, RootCertStore};
 use serde::{Deserialize, Serialize};
 use std::{env, error::Error, fs::File as StdFile, io::BufReader, ops::Range, sync::Arc};
+use tlsn_core::proof::TlsProof;
 use tokio::{fs::File, net::TcpStream};
 use tokio_rustls::TlsConnector;
 use tokio_util::compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt};
@@ -151,13 +152,15 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
 
     let builder = prover.commitment_builder();
 
-    // Commit to the outbound transcript, isolating the data that contain secrets
-    for range in public_ranges.iter().chain(private_ranges.iter()) {
-        builder.commit_sent(range.clone()).unwrap();
-    }
+    // Collect commitment ids for the outbound transcript
+    let mut commitment_ids = public_ranges
+        .iter()
+        .chain(private_ranges.iter())
+        .map(|range| builder.commit_sent(range.clone()).unwrap())
+        .collect::<Vec<_>>();
 
     // Commit to the full received transcript in one shot, as we don't need to redact anything
-    builder.commit_recv(0..recv_len).unwrap();
+    commitment_ids.push(builder.commit_recv(0..recv_len).unwrap());
 
     // Finalize, returning the notarized session
     let notarized_session = prover.finalize().await.unwrap();
@@ -165,9 +168,30 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     debug!("Notarization complete!");
     println!("Notarization completed successfully!");
 
+    let session_proof = notarized_session.session_proof();
+
+    let mut proof_builder = notarized_session.data().build_substrings_proof();
+
+    // Reveal everything but the bearer token (which was assigned commitment id 2)
+    proof_builder.reveal(commitment_ids[0]).unwrap();
+    proof_builder.reveal(commitment_ids[1]).unwrap();
+    proof_builder.reveal(commitment_ids[3]).unwrap();
+
+    let substrings_proof = proof_builder.build().unwrap();
+
+    let proof = TlsProof {
+        session: session_proof,
+        substrings: substrings_proof,
+    };
+
+    let res = serde_json::json!({
+      "proof": proof,
+      "notarized_session": notarized_session
+    });
+
     HttpResponse::Ok()
         .content_type("application/json")
-        .body(serde_json::to_string_pretty(&notarized_session).unwrap())
+        .body(serde_json::to_string_pretty(&res).unwrap())
 }
 
 async fn setup_notary_connection() -> (tokio_rustls::client::TlsStream<TcpStream>, String) {
