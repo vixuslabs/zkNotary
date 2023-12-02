@@ -9,9 +9,11 @@ use pem::parse;
 
 /// A simple verifier which reads a proof and returns the verified session transcript.
 #[wasm_bindgen]
-pub fn verify(proof_json: &str, notary_pubkey: &str) -> String {
+pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> {
     // Deserialize the proof
-    let proof: TlsProof = serde_json::from_str(proof_json).unwrap();
+    let proof: TlsProof = serde_json::from_str(proof_json)
+    .map_err(|e| JsValue::from_str(&format!("Failed to deserialize proof: {}", e)))?;
+
 
     let TlsProof {
         // The session proof establishes the identity of the server and the commitments
@@ -27,9 +29,10 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> String {
         Ok(public_key) => {
             session
             .verify_with_default_cert_verifier(public_key)
-            .unwrap();
+            .map_err(|e| JsValue::from_str(&format!("Verification failed: {}", e)))?;
+
             },
-        Err(e) => eprintln!("Error reading public key: {}", e),
+            Err(e) => return Err(JsValue::from_str(&format!("Error reading public key: {}", e))),
     }
     
 
@@ -47,7 +50,9 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> String {
     // Verify the substrings proof against the session header.
     //
     // This returns the redacted transcripts
-    let (mut sent, mut recv) = substrings.verify(&header).unwrap();
+    let (mut sent, mut recv) = substrings.verify(&header)
+    .map_err(|e| JsValue::from_str(&format!("Verification of substrings failed: {}", e)))?;
+
 
     // Replace the bytes which the Prover chose not to disclose with 'X'
     sent.set_redacted(b'X');
@@ -69,7 +74,7 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> String {
     let formatted_message = format!("{}", String::from_utf8(recv.data().to_vec()).unwrap());
     output.push_str(&formatted_message);
     output.push_str("-------------------------------------------------------------------\n");
-    output
+    Ok(output)
 }
 
 /// Returns a Notary pubkey trusted by this Verifier
