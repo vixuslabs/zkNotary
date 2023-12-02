@@ -3,7 +3,7 @@ mod utils;
 use wasm_bindgen::prelude::*;
 use std::time::Duration;
 use elliptic_curve::pkcs8::DecodePublicKey;
-use tlsn_core::proof::{SessionProof, TlsProof, self};
+use tlsn_core::proof::{SessionProof, TlsProof};
 use p256::PublicKey;
 use pem::parse;
 
@@ -20,7 +20,7 @@ pub fn rust_println(message: &str) {
 
 /// A simple verifier which reads a proof and prints the verified data to the console.
 #[wasm_bindgen]
-pub fn verify(proof_json: &str, notary_pubkey: &str) {
+pub fn verify(proof_json: &str, notary_pubkey: &str) -> String {
     // Deserialize the proof
     let proof: TlsProof = serde_json::from_str(proof_json).unwrap();
 
@@ -64,24 +64,42 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) {
     sent.set_redacted(b'X');
     recv.set_redacted(b'X');
 
-    rust_println("-------------------------------------------------------------------");
+    let mut output = String::new();
+    output.push_str("-------------------------------------------------------------------\n");
     let formatted_message = format!(
-        "Successfully verified that the bytes below came from a session with {:?} at {}.",
+        "Successfully verified that the bytes below came from a session with {:?} at {}.\n",
         server_name, time
     );
-    rust_println(&formatted_message);
-    rust_println("Note that the bytes which the Prover chose not to disclose are shown as X.");
-    rust_println("\n");
-    rust_println("Bytes sent:");
-    rust_println("\n");
+    output.push_str(&formatted_message);
+    output.push_str("Note that the bytes which the Prover chose not to disclose are shown as X.\n\n");
+    output.push_str("Bytes sent:\n\n");
     let formatted_message = format!("{}", String::from_utf8(sent.data().to_vec()).unwrap());
-    rust_println(&formatted_message);
-    rust_println("\n");
-    rust_println("Bytes received:");
-    rust_println("\n");
+    output.push_str(&formatted_message);
+    output.push_str("\n\n");
+    output.push_str("Bytes received:\n\n");
     let formatted_message = format!("{}", String::from_utf8(recv.data().to_vec()).unwrap());
-    rust_println(&formatted_message);
-    rust_println("-------------------------------------------------------------------");
+    output.push_str(&formatted_message);
+    output.push_str("-------------------------------------------------------------------\n");
+
+    // rust_println("-------------------------------------------------------------------");
+    // let formatted_message = format!(
+    //     "Successfully verified that the bytes below came from a session with {:?} at {}.",
+    //     server_name, time
+    // );
+    // rust_println(&formatted_message);
+    // rust_println("Note that the bytes which the Prover chose not to disclose are shown as X.");
+    // rust_println("\n");
+    // rust_println("Bytes sent:");
+    // rust_println("\n");
+    // let formatted_message = format!("{}", String::from_utf8(sent.data().to_vec()).unwrap());
+    // rust_println(&formatted_message);
+    // rust_println("\n");
+    // rust_println("Bytes received:");
+    // rust_println("\n");
+    // let formatted_message = format!("{}", String::from_utf8(recv.data().to_vec()).unwrap());
+    // rust_println(&formatted_message);
+    // rust_println("-------------------------------------------------------------------");
+    output
 }
 
 /// Returns a Notary pubkey trusted by this Verifier
