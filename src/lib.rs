@@ -7,18 +7,7 @@ use tlsn_core::proof::{SessionProof, TlsProof};
 use p256::PublicKey;
 use pem::parse;
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-
-// A Rust function that you can use instead of println!
-pub fn rust_println(message: &str) {
-    log(message);
-}
-
-/// A simple verifier which reads a proof and prints the verified data to the console.
+/// A simple verifier which reads a proof and returns the verified session transcript.
 #[wasm_bindgen]
 pub fn verify(proof_json: &str, notary_pubkey: &str) -> String {
     // Deserialize the proof
@@ -80,25 +69,6 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> String {
     let formatted_message = format!("{}", String::from_utf8(recv.data().to_vec()).unwrap());
     output.push_str(&formatted_message);
     output.push_str("-------------------------------------------------------------------\n");
-
-    // rust_println("-------------------------------------------------------------------");
-    // let formatted_message = format!(
-    //     "Successfully verified that the bytes below came from a session with {:?} at {}.",
-    //     server_name, time
-    // );
-    // rust_println(&formatted_message);
-    // rust_println("Note that the bytes which the Prover chose not to disclose are shown as X.");
-    // rust_println("\n");
-    // rust_println("Bytes sent:");
-    // rust_println("\n");
-    // let formatted_message = format!("{}", String::from_utf8(sent.data().to_vec()).unwrap());
-    // rust_println(&formatted_message);
-    // rust_println("\n");
-    // rust_println("Bytes received:");
-    // rust_println("\n");
-    // let formatted_message = format!("{}", String::from_utf8(recv.data().to_vec()).unwrap());
-    // rust_println(&formatted_message);
-    // rust_println("-------------------------------------------------------------------");
     output
 }
 
