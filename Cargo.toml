@@ -1,6 +1,6 @@
 [package]
 name = "zknotary-verifier"
-version = "0.1.2"
+version = "1.0.0"
 authors = ["Rafael Campos <racampos@gmail.com>"]
 edition = "2018"
 

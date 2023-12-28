@@ -14,7 +14,6 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> 
     let proof: TlsProof = serde_json::from_str(proof_json)
     .map_err(|e| JsValue::from_str(&format!("Failed to deserialize proof: {}", e)))?;
 
-
     let TlsProof {
         // The session proof establishes the identity of the server and the commitments
         // to the TLS transcript.
@@ -35,7 +34,6 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> 
             Err(e) => return Err(JsValue::from_str(&format!("Error reading public key: {}", e))),
     }
     
-
     let SessionProof {
         // The session header that was signed by the Notary is a succinct commitment to the TLS transcript.
         header,
@@ -59,7 +57,6 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> 
     recv.set_redacted(b'X');
 
     let mut output = String::new();
-    output.push_str("-------------------------------------------------------------------\n");
     let formatted_message = format!(
         "Successfully verified that the bytes below came from a session with {:?} at {}.\n",
         server_name, time
@@ -73,7 +70,6 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> 
     output.push_str("Bytes received:\n\n");
     let formatted_message = format!("{}", String::from_utf8(recv.data().to_vec()).unwrap());
     output.push_str(&formatted_message);
-    output.push_str("-------------------------------------------------------------------\n");
     Ok(output)
 }
 
