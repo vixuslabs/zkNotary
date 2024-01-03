@@ -2,17 +2,16 @@ import { EC2Client, RunInstancesCommand, DescribeInstancesCommand } from "@aws-s
 import { exec } from 'child_process';
 
 // Configure AWS
-const ec2Client = new EC2Client({ region: "us-east-1" }); // Update the region
+const ec2Client = new EC2Client({ region: "us-east-1" });
 
 async function deployTLSNotaryServer() {
   const instanceParams = {
-    ImageId: "ami-0fc5d935ebf8bc3bc", // Replace with the AMI ID you want to use
-    InstanceType: "t2.micro",        // Specify the instance type
-    KeyName: "zknotary",          // Your SSH key pair name
-    SecurityGroupIds: ["sg-017f77fdb7de58e8a"], // Security Group ID
+    ImageId: "ami-0fc5d935ebf8bc3bc",
+    InstanceType: "t2.micro",
+    KeyName: "zknotary",
+    SecurityGroupIds: ["sg-017f77fdb7de58e8a"],
     MinCount: 1,
     MaxCount: 1,
-    // Other configurations like block device mappings, IAM roles, etc.
 };
 
     const runCommand = new RunInstancesCommand(instanceParams);
