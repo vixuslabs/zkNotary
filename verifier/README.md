@@ -27,7 +27,7 @@ Note: This project requires a clang version newer than 16.0.0 to compile ring to
 npm install -g wasm-pack
 ```
 
-2. Optional: For Mac users with a version of clang older than 16.0.0, you can use Homebrew to install llvm and then use it to compile the project.
+2. Optional: For Mac users with a version of clang older than 16.0.0, you can use Homebrew to install `llvm` and then use it to compile the project.
 
 ```sh
 brew install llvm

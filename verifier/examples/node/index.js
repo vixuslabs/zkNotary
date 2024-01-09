@@ -16,7 +16,6 @@ const notary_pubkey = await readFile('./notary.pub');
 
 try {
     const result = wasm.verify(proof_json, notary_pubkey);
-    // console.log(result);
     const parsedData = twitter.parse(result);
     console.log(JSON.stringify(parsedData, null, 2));
 } catch (e) {
