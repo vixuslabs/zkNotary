@@ -101,7 +101,7 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     // Spawn the HTTP task to be run concurrently
     let connection_task = tokio::spawn(connection.without_shutdown());
 
-    // Build the HTTP request to fetch the DMs
+    // Build the HTTP request to fetch the tweet
     let request = Request::builder()
         .uri(format!(
             "https://{}/{}/{}",
