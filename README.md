@@ -38,59 +38,93 @@ Our goal has been to provide the Mina community with an easy-to-use building blo
 
 ## A TLSNotary Primer
 
-In order to understand zkNotary's architecture and design choices, it's important to first understand the basics of how TLSNotary works. Following is a quick overview of the most important aspects:
+In order to understand zkNotary's architecture and design choices, it's important to first understand the basics of how TLSNotary works. Following is a quick overview of the most important aspects.
+
+### TLS 101
+
+The TLS protocol allows an HTTP client (let's call it Alice) to exchange data securely with a web server. TLS does this by providing data privacy and data integrity to the communication between Alice and the server. Data privacy means that the data is encrypted and only Alice is able to decrypt it. Data integrity means that Alice can be certain that the data has not been tampered with.
+
+<img alt="what-is-tlsnotary-1" src="docs/img/what-is-tlsnotary-1.png" width="500">
+
+### The Data Portability Problem
+
+Now let's see what happens when Alice needs to share the data it retrieved from the web server with a third party (let's call him Bob). Well, in this case, Bob can't use the data without having to trust that Alice didn't modify it. This can be summarized as the data not being "portable".
+
+<img alt="what-is-tlsnotary-2" src="docs/img/what-is-tlsnotary-2.png" width="500">
+
+The reason for this lack of portability is simple: the encryption and signing keys from the TLS session between Alice and the web server are _symmetric keys_, which means that they are the same for both Alice and the server. So, if Alice knows the keys, nothing prevents her from changing the data and then re-signing it before forwarding it to Bob.
+
+### TLSNotary to the Rescue
+
+But what if we could, somehow, prevent Alice from having access to the TLS session keys? In this case she would not be able to tamper with the data and Bob would be certain of the data's integrity. This is exactly what TLSNotary helps with: making the data portable.
+
+<img alt="what-is-tlsnotary-3" src="docs/img/what-is-tlsnotary-3.png" width="500">
+
+### TLSNotary's Secret Sauce
+
+So, how exactly does TLSNotary prevent Alice from having access to the keys? After all, being the HTTP client, Alice definitely needs to negotiate the TLS session keys with the server, in order to exchange data, right?
+
+To solve this problem, TLSNotary introduces a novel idea: bring in a new participant called a "Notary" that, along with Alice, performs the negotiation of the session keys with the server using MultiParty Computation (MPC). This way, neither Alice nor the Notary has the whole keys, but only a share of them, thus preventing Alice from signing the data herself.
+
+<img alt="how-does-tlsnotary-work-1" src="docs/img/how-does-tlsnotary-work-1.png" width="500">
+
+### TLSNotary Features
+
+#### No need for cooperation from the web server
+
+Because everything happens on the client side, from the web server's point of view, the interaction with the Client-Notary is no different from any other
 
 ## Implementation
 
 The project is divided into four main components:
 
-1. The service-specific provers
-2. The universal verifier
-3. The parser utilities
-4. The AWS deployment utility
+1. The service-specific **Provers**
+2. The universal **Verifier**
+3. The **Parser** utilities
+4. The **AWS deployment** utility
 
-The following diagram illustrates the general architecture for the first three components:
+The following diagram illustrates the general architecture and interrelationships for the first three components. We use Twitter as an example, but the workflow is the same with any other service:
 
-<img alt="general-architecture" src="docs/img/general-architecture.png">
+<img alt="general-architecture" src="docs/img/general-architecture.png" width="700">
 
-Here is a breakdown of each of the steps involved in the process. We will use Twitter as an example, but the workflow is the same with any other service:
+Here is a breakdown of each of the steps involved in the process:
 
 - **Step 1**: Alice calls the zkNotary Prover REST API with the tweet's URL as a querystring argument.
 
-```
-GET /notarize_twitter?tweet_url=https://twitter.com/mathy782/status/1670919907687505920
-```
+  ```
+  GET /notarize_twitter?tweet_url=https://twitter.com/mathy782/status/1670919907687505920
+  ```
 
-This is the tweet that is being notarized for this example:
+  This is the tweet that is being notarized for this example:
 
-<img alt="notarized_tweet" src="docs/img/notarized_tweet.png">
+  <img alt="notarized_tweet" src="docs/img/notarized_tweet.png" width="400">
 
 - **Step 2**: The zkNotary Prover and the Notary Server use MPC to create a joint TLS session with the Twitter API and retrieve the tweet's data.
 
 - **Step 3**: After closing the TLS session with Twitter, the Notary Server executes the notarization of the TLS session and signs it with its private key.
 
-- **Step 4**: The Prover REST API replies to Alice with a JSON object containing the notarization of the TLS session with the Twitter server as well as the corresponding proof generated by the Notary Server.
+- **Step 4**: The Prover REST API replies to Alice with a JSON object containing the signed notarization of the TLS session with the Twitter server as well as the corresponding proof generated by the Notary Server.
 
 - **Step 5**: Alice sends the signed notarized session and the proof to Bob. In order to verify it by himself, he uses the `verify()` function from the [`zknotary-verifier`](./verifier) npm package. This function takes as input the proof and the Notary Server's public key and returns a plain text file containing the transcript from the TLS session.
 
-**Note**: Given that the verifier's output is a plain text file, in order for Bob to make sense of it and extract the important information (in our example, the tweet's text), he needs to parse it. But because the contents of the transcript vary substantially depending on their source (Twitter, Reddit, Discord, etc) we have decided to write a set of utility functions that correctly parse the verifier's output, given its source.
+  **Note**: Given that the verifier's output is a plain text file, in order for Bob to make sense of it and extract the important information (in our example, the tweet's text), he needs to parse it. But because the contents of the transcript vary substantially depending on their source (Twitter, Reddit, Discord, etc) we have decided to write a set of [utility functions](./parsers) that correctly parse the verifier's output, given its source.
 
-- Step 6: Bob uses the `twitter.parse()` function from the `zknotary-parsers` npm package to parse the plain text file and receive in return a structured JSON object from which he can easily extract the important information, i.e, the tweet's data:
+- Step 6: Bob uses the `twitter.parse()` function from the [`zknotary-parsers`](./parsers) npm package to parse the plain text file and receive in return a structured JSON object from which he can easily extract the important information, i.e, the tweet's data:
 
-```json
-{
-  "request": { ... },
-  "response":
-    "status": ...,
-    "headers": { ... },
-    "body": {
-          "data": {
-            "edit_history_tweet_ids": [
-              "1686626240768163840"
-            ],
-            "id": "1686626240768163840",
-            "text": "I endorse this NFT: 0f1a6f87599424233134e77a0214f9ebe2a2a7da73ed3025801412ff34e3ae2a"
+  ```json
+  {
+    "request": { ... },
+    "response":
+      "status": ...,
+      "headers": { ... },
+      "body": {
+            "data": {
+              "edit_history_tweet_ids": [
+                "1686626240768163840"
+              ],
+              "id": "1686626240768163840",
+              "text": "I endorse this NFT: 0f1a6f87599424233134e77a0214f9ebe2a2a7da73ed3025801412ff34e3ae2a"
+            }
           }
-        }
-}
-```
+  }
+  ```
