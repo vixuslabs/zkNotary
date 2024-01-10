@@ -65,4 +65,4 @@ We are grateful to the authors of these projects for their work.
 
 ## License
 
-MIT, Apache
+Apache

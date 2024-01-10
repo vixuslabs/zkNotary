@@ -4,8 +4,6 @@ This package provides utilities to parse the text output of the `zknotary-verifi
 
 If the proof is valid, the verifier's output consists of the original notarization of the TLS session created by TLSNotary. This notarization is made up of unstructured text that varies significantly depending on the type of data that was notarized in the first place. To help developers more easily process the verifier's output, we have created a set of application-specific parsers.
 
-
-
 ## Installation
 
 To install the `zknotary-parsers` package, use the following command:
@@ -15,11 +13,12 @@ npm install zknotary-parsers
 ```
 
 ## Usage
+
 First, import the required parser from the zknotary-parsers package. For example, to use the Twitter parser:
 
 ```js
 import { twitter } from "zknotary-parsers";
-``````
+```
 
 Then, you can use the parser to parse the output of the zknotary-verifier. The parser will return a structured representation of the verification output.
 
@@ -27,6 +26,7 @@ Then, you can use the parser to parse the output of the zknotary-verifier. The p
 const proof = /* the notarization proof */;
 const parsedProof = twitter.parse(proof);
 ```
+
 ## Sample input-output data
 
 Sample notarization data (verifier's output):
@@ -115,9 +115,7 @@ Corresponding parsed output:
     },
     "body": {
       "data": {
-        "edit_history_tweet_ids": [
-          "1686626240768163840"
-        ],
+        "edit_history_tweet_ids": ["1686626240768163840"],
         "id": "1686626240768163840",
         "text": "I endorse this NFT: 0f1a6f87599424233134e77a0214f9ebe2a2a7da73ed3025801412ff34e3ae2a"
       }
@@ -135,7 +133,9 @@ The `zknotary-parsers package`` currently includes the following parsers:
 More parsers will be added in the future to support other types of notarization proofs.
 
 ## Contributing
+
 We welcome contributions to the zknotary-parsers package. Please see the CONTRIBUTING.md file for more information.
 
 ## License
-This package is licensed under the MIT License.
+
+Apache
