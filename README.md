@@ -48,7 +48,7 @@ The TLS protocol allows an HTTP client (let's call it Alice) to exchange data se
 
 ### The Data Portability Problem
 
-Now let's see what happens when Alice needs to share the data it retrieved from the web server with a third party (let's call him Bob). Well, in this case, Bob can't use the data without having to trust that Alice didn't modify it. This can be summarized as the data not being "portable".
+Now let's see what happens when Alice needs to share the data she retrieved from the web server with a third party (let's call him Bob). Well, in this case, Bob can't use the data without having to trust that Alice didn't modify it. This can be summarized as the data not being "portable".
 
 <img alt="what-is-tlsnotary-2" src="docs/img/what-is-tlsnotary-2.png" width="500">
 
@@ -56,15 +56,15 @@ The reason for this lack of portability is simple: the encryption and signing ke
 
 ### TLSNotary to the Rescue
 
-But what if we could, somehow, prevent Alice from having access to the TLS session keys? In this case she would not be able to tamper with the data and Bob would be certain of the data's integrity. This is exactly what TLSNotary helps with: making the data portable.
+But what if we could, somehow, prevent Alice from having access to the TLS session keys? In this case she would not be able to tamper with the data and Bob would be certain of the data's integrity. This is exactly what TLSNotary helps with, thus making the data portable.
 
 <img alt="what-is-tlsnotary-3" src="docs/img/what-is-tlsnotary-3.png" width="500">
 
 ### TLSNotary's Secret Sauce
 
-So, how exactly does TLSNotary prevent Alice from having access to the keys? After all, being the HTTP client, Alice definitely needs to negotiate the TLS session keys with the server, in order to exchange data, right?
+So, how exactly does TLSNotary prevent Alice from having access to the keys? After all, being the HTTP client, Alice definitely needs to negotiate the TLS session keys with the server in order to exchange data, right?
 
-To solve this problem, TLSNotary introduces a novel idea: bring in a new participant called a "Notary" that, along with Alice, performs the negotiation of the session keys with the server using MultiParty Computation (MPC). This way, neither Alice nor the Notary has the whole keys, but only a share of them, thus preventing Alice from signing the data herself.
+To solve this problem, TLSNotary introduces a novel idea: to bring in a new participant called a "Notary" that, along with Alice, performs the negotiation of the session keys with the server using MultiParty Computation (MPC). This way, neither Alice nor the Notary has the whole keys, but only a share of them, thus preventing Alice from signing the data herself.
 
 <img alt="how-does-tlsnotary-work-1" src="docs/img/how-does-tlsnotary-work-1.png" width="500">
 
@@ -72,7 +72,21 @@ To solve this problem, TLSNotary introduces a novel idea: bring in a new partici
 
 #### No need for cooperation from the web server
 
-Because everything happens on the client side, from the web server's point of view, the interaction with the Client-Notary is no different from any other
+Because everything happens on the client side, from the web server's point of view, the interaction with the Alice-Notary bundle is no different from an interaction with any other regular HTTP client. This means that TLSNotary doesn't require the web server to cooperate in any way.
+
+#### Selective Disclosure
+
+Alice can redact part of the data before sending it to Bob, so that she doesn't disclose sensitive information.
+
+#### General-purpose Notary Server
+
+The Notary never learns anything about the data that's being notarized, not even the web server's identity. This allows the Notary to be run as a general-purpose server, to be used by anyone who needs to notarize data to make it portable.
+
+#### Trust Assumptions
+
+Even though Bob doesn't need to trust Alice anymore, he does need to trust the Notary. This is because there's the possibility of the Notary colluding with Alice in order to modify the data and mislead Bob into accepting it as original.
+
+There are some ways to minimize this trust assumption. For example, given that the Notary is a general-purpose server, Bob could require notarizations from serveral independent Notaries before accepting the data as valid. Another possibility is for Bob to act as the Notary by running the notary server software himself. This would eliminate all trust assumptions.
 
 ## Implementation
 
