@@ -1,43 +1,46 @@
-# AWS Deployment
+# AWS Deployment Utility for the Notary Server
 
-This directory contains the script for deploying the TLS Notary Server on AWS.
+This README provides a comprehensive guide on using the AWS Deployment Utility script for deploying the TLSNotary Server on AWS infrastructure. This utility is especially useful for zkApp developers who wish to deploy their application in a production environment.
+
+## Overview
+
+The AWS Deployment Utility script is designed to automate the deployment of a TLSNotary Server on an AWS EC2 instance. This script handles various tasks, including the creation of an EC2 instance, installation of necessary dependencies, and running the Notary Server.
 
 ## Prerequisites
 
-- Node.js
-- AWS SDK for JavaScript
+Before running this script, ensure you have the following:
 
-## File Structure
+1. **AWS Account**: An active AWS account and appropriate permissions to create and manage EC2 instances.
+2. **AWS SDK for JavaScript**: Ensure the AWS SDK for JavaScript is installed and configured correctly in your environment.
+3. **SSH Key**: The script assumes you have an SSH key named `zknotary` in your AWS account and locally under `~/.ssh/zknotary.pem`. Make sure this key exists, or modify the script to use a key of your choice.
 
-- `aws_deploy.js`: This is the main script that handles the deployment of the TLS Notary Server on AWS.
+## Script Breakdown
 
-## Usage
+- **EC2 Client Configuration**: The script sets up an EC2 client targeting the `us-east-1` region.
+- **Instance Creation**: It deploys a `t2.micro` instance using the specified AMI, key name, and security group.
+- **Instance Initialization**: After creating the instance, the script waits for 60 seconds to allow the instance to initialize.
+- **Setup Commands**: The script executes a series of commands on the newly created instance. These commands include setting up a DNS resolver, installing Rust, cloning the TLSNotary repository, and running the Notary Server.
+- **SSH Execution**: It uses SSH to run the setup commands on the EC2 instance.
 
-1. Configure your AWS credentials. You can do this by setting the following environment variables:
+## Running the Script
 
-   - `AWS_ACCESS_KEY_ID`
-   - `AWS_SECRET_ACCESS_KEY`
-   - `AWS_REGION`
+To run the script, simply execute it in your JavaScript environment. The script will log outputs to the console, which includes any standard output or errors encountered during the deployment process.
 
-2. Run the deployment script:
+### Command to Run
 
-```sh
-node aws_deploy.js
+```bash
+node aws-deployment-script.js
 ```
-
-This script will create a new EC2 instance, configure it, and deploy the TLS Notary Server on it.
-
-## AWS Configuration
-
-The script uses the following AWS services:
-
-- EC2: For creating and managing the server instance.
-
-The script is configured to use the us-east-1 region. If you want to use a different region, you can change it in the EC2Client configuration in the aws_deploy.js file.
 
 ## Troubleshooting
 
-If the deployment fails, the error will be logged to the console. Check the error message for details about what went wrong.
+If the deployment fails, check the following:
+
+- AWS Credentials: Ensure your AWS credentials are set up correctly and have the necessary permissions.
+- SSH Key: Verify that the SSH key is correctly set up both in AWS and locally.
+- Network Accessibility: Ensure that the security group and network configurations allow SSH access to the EC2 instance.
+
+**Note**: This script is intended for production deployment. For development purposes, you may want to consider simpler alternatives, like cloning the TLSNotary repository and running the [Notary Server](https://github.com/tlsnotary/tlsn/tree/dev/notary-server).
 
 ## Contributing
 

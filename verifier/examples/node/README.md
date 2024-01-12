@@ -69,4 +69,4 @@ Contributions are welcome. Please submit a pull request or create an issue to di
 
 ## License
 
-MIT, Apache
+Apache
