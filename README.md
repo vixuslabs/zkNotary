@@ -32,7 +32,7 @@ Solutions to this problem have already been proposed and implemented by projects
 
 Since TLSNotary is an open-source project, zkNotary focuses on using it as its core component. We aimed to create a user-friendly layer specially designed for Mina zkApp developers, making it simple to add a zkOracle to any zkApp architecture.
 
-Given the limited timeframe (three months) available for the development of this project, we are have constrained zkNotary's scope to retrieving and authenticating data from RESTful APIs only, not generic websites. While thiqs approach is somewhat limiting, we believe it addresses the needs of most zkApp developers.
+Given the limited timeframe (three months) available for the development of this project, we have constrained zkNotary's scope to retrieving and authenticating data from RESTful APIs only, not generic websites. While this approach is somewhat limiting, we believe it addresses the needs of most zkApp developers.
 
 Our goal has been to provide the Mina community with an easy-to-use building block that can be incorporated into any zkApp architecture, without the need for developers to understand the complexities of the TLS protocol or the inner workings of TLSNotary.
 
@@ -42,27 +42,27 @@ In order to understand zkNotary's architecture and design choices, it's importan
 
 ### TLS 101
 
-The TLS protocol allows an HTTP client (let's call it Alice) to exchange data securely with a web server. TLS does this by providing data privacy and data integrity to the communication between Alice and the server. Data privacy means that the data is encrypted and only Alice is able to decrypt it. Data integrity means that Alice can be certain that the data has not been tampered with.
+The TLS protocol allows an HTTP client (Alice) to exchange data securely with a web server. TLS does this by providing data privacy and data integrity to the communication between Alice and the server. Data privacy means that the data is encrypted and only Alice is able to decrypt it. Data integrity means that Alice can be certain that the data has not been tampered with.
 
 <img alt="what-is-tlsnotary-1" src="docs/img/what-is-tlsnotary-1.png" width="500">
 
 ### The Data Portability Problem
 
-Now let's see what happens when Alice needs to share the data she retrieved from the web server with a third party (let's call him Bob). Well, in this case, Bob can't use the data without having to trust that Alice didn't modify it. This can be summarized as the data not being "portable".
+Now let's see what happens when Alice needs to share the data she retrieved from the web server with a third party (Bob). In this case, Bob can't use the data without having to trust that Alice didn't modify it. This can be summarized as the data not being "portable".
 
 <img alt="what-is-tlsnotary-2" src="docs/img/what-is-tlsnotary-2.png" width="500">
 
-The reason for this lack of portability is simple: the encryption and signing keys from the TLS session between Alice and the web server are _symmetric keys_, which means that they are the same for both Alice and the server. So, if Alice knows the keys, nothing prevents her from changing the data and then re-signing it before forwarding it to Bob.
+The reason for this lack of portability is simple: the encryption and signing keys from the TLS session between Alice and the web server are shared keys, which means that they are the same for both Alice and the server. So, if Alice knows the keys, nothing prevents her from changing the data and then re-signing it before forwarding it to Bob.
 
 ### TLSNotary to the Rescue
 
-But what if we could, somehow, prevent Alice from having access to the TLS session keys? In this case she would not be able to tamper with the data and Bob would be certain of the data's integrity. This is exactly what TLSNotary helps with, thus making the data portable.
+TLSNotary was introduced to solve this portability problem. If only we could, somehow, prevent Alice from having access to the TLS session keys, she would not be able to tamper with the data and Bob would be certain of the data's integrity. This is exactly what TLSNotary does, thus making the data portable.
 
 <img alt="what-is-tlsnotary-3" src="docs/img/what-is-tlsnotary-3.png" width="500">
 
 ### TLSNotary's Secret Sauce
 
-So, how exactly does TLSNotary prevent Alice from having access to the keys? After all, being the HTTP client, Alice definitely needs to negotiate the TLS session keys with the server in order to exchange data, right?
+But, how exactly does TLSNotary prevent Alice from having access to the keys? After all, being the HTTP client, Alice definitely needs to negotiate the TLS session keys with the server in order to exchange data?
 
 To solve this problem, TLSNotary introduces a novel idea: to bring in a new participant called a "Notary" that, along with Alice, performs the negotiation of the session keys with the server using MultiParty Computation (MPC). This way, neither Alice nor the Notary has the whole keys, but only a share of them, thus preventing Alice from signing the data herself.
 
@@ -70,19 +70,19 @@ To solve this problem, TLSNotary introduces a novel idea: to bring in a new part
 
 ### TLSNotary Features
 
-#### No need for cooperation from the web server
+- #### No need for cooperation from the web server
 
-Because everything happens on the client side, from the web server's point of view, the interaction with the Alice-Notary bundle is no different from an interaction with any other regular HTTP client. This means that TLSNotary doesn't require the web server to cooperate in any way.
+  Because everything happens on the client side, from the web server's point of view, the interaction with the Alice-Notary bundle is no different from an interaction with any other standard HTTP client. This means that TLSNotary doesn't require the web server to cooperate in any way.
 
-#### Selective Disclosure
+- #### Selective Disclosure
 
-Alice can redact part of the data before sending it to Bob, so that she doesn't disclose sensitive information.
+  Alice can redact part of the data before sending it to Bob, so that she doesn't disclose sensitive information.
 
-#### General-purpose Notary Server
+- #### General-purpose Notary Server
 
-The Notary never learns anything about the data that's being notarized, not even the web server's identity. This allows the Notary to be run as a general-purpose server, to be used by anyone who needs to notarize data to make it portable.
+  The Notary never learns anything about the data that's being notarized, not even the web server's identity. This allows the Notary to be run as a general-purpose server, to be used by anyone who needs to notarize data to make it portable.
 
-#### Trust Assumptions
+### TLSNotary's Trust Assumptions
 
 Even though Bob doesn't need to trust Alice anymore, he does need to trust the Notary. This is because there's the possibility of the Notary colluding with Alice in order to modify the data and mislead Bob into accepting it as original.
 
@@ -92,12 +92,41 @@ There are some ways to minimize this trust assumption. For example, given that t
 
 The project is divided into four main components:
 
-1. The service-specific **Provers**
-2. The universal **Verifier**
-3. The **Parser** utilities
-4. The **AWS deployment** utility
+1. ### The Prover
 
-The following diagram illustrates the general architecture and interrelationships for the first three components. We use Twitter as an example, but the workflow is the same with any other service:
+This component is at the heart of zkNotary. It is the one responsible for performing the multiparty computation along with the Notary to establish an MPC TLS session with the web server and generating the session notarization and corresponding proof.
+
+It has been implemented as a REST API written in Rust (as the TLSNotary is itself written in Rust). The REST API exposes a series of endpoints, each one for a different web server (Twitter, Discord, etc). The idea behind implementing it as a REST API is to abstract away from the zkApp developer the complexities of compiling and running Rust code.
+
+The complete source code and documentation for this component can be found [under the `provers` directory](./provers).
+
+2. ### The Verifier
+
+This component facilitates the verification of a proof of notarization generated by TLSNotary from within a Javascript application.
+
+The code is written in Rust but it has been compiled to Web Assembly, which in turn has been used to create an NPM package (using the [wasm-pack](https://rustwasm.github.io/docs/wasm-pack/introduction.html) project), that can be imported into any Javascript application. The NPM package has been published to the NPM Registry as `zknotary-verifier`.
+
+The complete source code and documentation for this component can be found [under the `verifier` directory](./verifier).
+
+3. ### The Parser
+
+This component contains a set of utilities to help the developer correctly parse the output of the verifier component.
+
+If the proof is valid, the verifier's output consists of the original notarization of the TLS session created by TLSNotary. This notarization is made up of unstructured text that varies significantly depending on the type of data that was notarized in the first place. To help developers more easily process the verifier's output, we have created a set of application-specific parsers.
+
+For the time being, only the parser for Twitter has been included, but more will be added later on for services like Facebook, Reddit and others.
+
+The complete source code and documentation for this component can be found [under the `parsers` directory](./parsers).
+
+4. ### The AWS deployment utility
+
+For the Prover to perform its job, a Notary Server has to be running somewhere. For developing purposes the developer can just clone the [TLSNotary Github repo](https://github.com/tlsnotary/tlsn) and then build and run the Notary Server. But for a production application, the Notary Server has to be deployed on public infrastructure that is reachable by the Prover.
+
+In order to make it easier for a zkApp developer to do this on AWS, we have included a deployment script written in Javascript that performs all the tasks associated with the deployment of a server on AWS: create an EC2 instance from a Linux image, install Rust, clone the TLSNotary Github repo, build and finally run the Notary Server.
+
+## General Architecture
+
+In order to better understand the overall architecture of the project, we have designed the following diagram, which illustrates the flow and interrelationships between the different components. We use Twitter as an example, but the workflow is the same with any other service:
 
 <img alt="general-architecture" src="docs/img/general-architecture.png" width="700">
 
@@ -127,10 +156,10 @@ Here is a breakdown of each of the steps involved in the process:
 
   ```json
   {
-    "request": { ... },
+    "request": { },
     "response":
-      "status": ...,
-      "headers": { ... },
+      "status": "...",
+      "headers": { },
       "body": {
             "data": {
               "edit_history_tweet_ids": [
@@ -142,3 +171,21 @@ Here is a breakdown of each of the steps involved in the process:
           }
   }
   ```
+
+## Setup & Usage
+
+Please refer to the README files for each of the Prover, Verifier and Parser sub-projects for detailed instructions on usage:
+
+1. [Prover](./provers/README.md)
+2. [Verifier](./verifier/README.md)
+3. [Parsers](./parsers/README.md)
+
+## Future work
+
+1. Create new endpoints for the Prover in order to nataively support more services such as Facebook, Reddit, etc.
+
+2. Replace the `zknotary-verifier` NPM package (which is written in Rust and then compiled to Web Assembly) with native o1js code capable of verifying the TLSNotary proof.
+
+## License
+
+This project is licensed under the [Apache-2.0](LICENSE) License.
