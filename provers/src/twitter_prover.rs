@@ -18,7 +18,7 @@ use tlsn_prover::tls::{Prover, ProverConfig};
 const SERVER_DOMAIN: &str = "api.twitter.com";
 const ROUTE: &str = "2/tweets";
 
-// Setting of the notary server — make sure these are the same with those in ../../../notary-server
+// Setting of the notary server
 const NOTARY_HOST: &str = "127.0.0.1";
 const NOTARY_PORT: u16 = 7047;
 const NOTARY_CA_CERT_PATH: &str = "./src/rootCA.crt";

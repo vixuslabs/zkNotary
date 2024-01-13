@@ -189,6 +189,7 @@ Please refer to the README files for each of the Prover, Verifier and Parser sub
 1. [Prover](./provers/README.md)
 2. [Verifier](./verifier/README.md)
 3. [Parsers](./parsers/README.md)
+4. [AWS Deployment Script](./aws/README.md)
 
 ## Future work
 
