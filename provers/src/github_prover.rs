@@ -108,19 +108,18 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
 
     // Build the HTTP request to fetch the tweet
     let request = Request::builder()
-        // .uri(format!(
-        //     "https://{}/{}/{}/{}/commits?since={}&until={}&page=1",
-        //     SERVER_DOMAIN,
-        //     ROUTE,
-        //     username,
-        //     repo,
-        //     since,
-        //     until
-        // ))
-        .uri(format!("https://api.github.com/repos/racampos/zkNotary/commits?since=2024-01-01T00:00:00Z&until=2024-01-03T23:59:59Z&page=1"))
-        // .header("Host", SERVER_DOMAIN)
-        // .header("Connection", "close")
-        // .header("Authorization", format!("Bearer {bearer_token}"))
+        .uri(format!(
+            "https://{}/{}/{}/{}/commits?since={}&until={}&page=1",
+            SERVER_DOMAIN,
+            ROUTE,
+            username,
+            repo,
+            since,
+            until
+        ))
+        .header("Host", SERVER_DOMAIN)
+        .header("Connection", "close")
+        .header("Authorization", format!("Bearer {bearer_token}"))
         .body(Body::empty())
         .unwrap();
 
