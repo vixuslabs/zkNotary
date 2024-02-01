@@ -1,5 +1,9 @@
 # zkNotary: a zkOracle for Mina powered by TLSNotary
 
+**Note to Users**: Our project, zkNotary, is extensive, spanning multiple directories, each meticulously documented to aid your understanding and usage. For your convenience and a seamless navigation experience, we highly recommend visiting our comprehensive documentation hosted on Gitbook. There, you'll find an organized, user-friendly guide tailored to help you navigate through every aspect of zkNotary with ease.
+
+📖 Explore the zkNotary Documentation: [zkNotary Documentation on Gitbook](https://zknotary.gitbook.io/zknotary/)
+
 ## Introduction
 
 In today's Internet, private data from HTTPS-based REST APIs can be securely accessed thanks to technologies like TLS. However, proving the origin of such data to third parties is still a significant challenge. This limitation confines the value of the data to its original source, preventing it from being exported to other applications with preserved integrity.
