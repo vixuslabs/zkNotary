@@ -5,7 +5,7 @@ use hyper::{body::to_bytes, client::conn::Parts, Body, Request, StatusCode};
 use rustls::{Certificate, ClientConfig, RootCertStore};
 use serde::{Deserialize, Serialize};
 use std::{env, fs::File as StdFile, io::BufReader, ops::Range, sync::Arc};
-use tlsn_core::{proof::TlsProof, Direction};
+use tlsn_core::proof::TlsProof;
 use tokio::{fs::File, net::TcpStream};
 use tokio_rustls::TlsConnector;
 use tokio_util::compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt};
