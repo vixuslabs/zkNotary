@@ -5,7 +5,7 @@ use hyper::{body::to_bytes, client::conn::Parts, Body, Request, StatusCode};
 use rustls::{Certificate, ClientConfig, RootCertStore};
 use serde::{Deserialize, Serialize};
 use std::{env, fs::File as StdFile, io::BufReader, ops::Range, sync::Arc};
-use tlsn_core::proof::TlsProof;
+use tlsn_core::{proof::TlsProof, Direction};
 use tokio::{fs::File, net::TcpStream};
 use tokio_rustls::TlsConnector;
 use tokio_util::compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt};
@@ -147,11 +147,11 @@ pub async fn notarize() -> impl Responder {
     let mut commitment_ids = public_ranges
         .iter()
         .chain(private_ranges.iter())
-        .map(|range| builder.commit_sent(range.clone()).unwrap())
+        .map(|range| builder.commit_sent(range).unwrap())
         .collect::<Vec<_>>();
 
     // Commit to the full received transcript in one shot, as we don't need to redact anything
-    commitment_ids.push(builder.commit_recv(0..recv_len).unwrap());
+    commitment_ids.push(builder.commit_recv(&(0..recv_len)).unwrap());
 
     // Finalize, returning the notarized session
     let notarized_session = prover.finalize().await.unwrap();
@@ -164,9 +164,14 @@ pub async fn notarize() -> impl Responder {
     let mut proof_builder = notarized_session.data().build_substrings_proof();
 
     // Reveal everything but the auth token (which was assigned commitment id 2)
-    proof_builder.reveal(commitment_ids[0]).unwrap();
-    proof_builder.reveal(commitment_ids[1]).unwrap();
-    proof_builder.reveal(commitment_ids[3]).unwrap();
+    proof_builder.reveal_by_id(commitment_ids[0]).unwrap();
+    proof_builder.reveal_by_id(commitment_ids[1]).unwrap();
+    proof_builder.reveal_by_id(commitment_ids[3]).unwrap();
+
+    // commitment_ids.iter().for_each(|commitment_id| {
+    //     // proof_builder.reveal(*commitment_id).unwrap();
+    //     proof_builder.reveal_by_id()
+    // });
 
     let substrings_proof = proof_builder.build().unwrap();
 

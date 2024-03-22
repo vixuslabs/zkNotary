@@ -38,7 +38,7 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> 
         // The session header that was signed by the Notary is a succinct commitment to the TLS transcript.
         header,
         // This is the server name, checked against the certificate chain shared in the TLS handshake.
-        server_name,
+        session_info,
         ..
     } = session;
 
@@ -59,7 +59,7 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> 
     let mut output = String::new();
     let formatted_message = format!(
         "Successfully verified that the bytes below came from a session with {:?} at {}.\n",
-        server_name, time
+        session_info.server_name, time
     );
     output.push_str(&formatted_message);
     output.push_str("Note that the bytes which the Prover chose not to disclose are shown as X.\n\n");

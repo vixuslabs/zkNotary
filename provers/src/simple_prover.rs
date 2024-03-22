@@ -115,12 +115,12 @@ pub async fn notarize() -> impl Responder {
     // Commit to each range of the public outbound data which we want to disclose
     let sent_commitments: Vec<_> = sent_public_ranges
         .iter()
-        .map(|r| builder.commit_sent(r.clone()).unwrap())
+        .map(|r| builder.commit_sent(r).unwrap())
         .collect();
     // Commit to each range of the public inbound data which we want to disclose
     let recv_commitments: Vec<_> = recv_public_ranges
         .iter()
-        .map(|r| builder.commit_recv(r.clone()).unwrap())
+        .map(|r| builder.commit_recv(r).unwrap())
         .collect();
 
     // Finalize, returning the notarized session
@@ -131,10 +131,10 @@ pub async fn notarize() -> impl Responder {
 
     // Reveal all the public ranges
     for commitment_id in sent_commitments {
-        proof_builder.reveal(commitment_id).unwrap();
+        proof_builder.reveal_by_id(commitment_id).unwrap();
     }
     for commitment_id in recv_commitments {
-        proof_builder.reveal(commitment_id).unwrap();
+        proof_builder.reveal_by_id(commitment_id).unwrap();
     }
 
     let substrings_proof = proof_builder.build().unwrap();
