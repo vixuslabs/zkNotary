@@ -1,4 +1,4 @@
-# Mina zkApp: O1js Verifier
+# o1js Verifier
 
 ## Introduction
 
