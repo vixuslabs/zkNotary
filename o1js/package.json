@@ -1,0 +1,20 @@
+{
+  "name": "zknotary-verifier--root",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "turbo dev --parallel",
+    "start": "turbo start",
+    "clean:workspaces": "turbo clean",
+    "typecheck": "turbo typecheck",
+    "lint": "turbo lint"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.11",
+    "turbo": "^1.10.16" 
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
