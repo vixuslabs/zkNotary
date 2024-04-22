@@ -11,8 +11,12 @@
     "lint": "turbo lint"
   },
   "devDependencies": {
-    "@types/node": "^16.11.11",
-    "turbo": "^1.10.16" 
+    "@turbo/gen": "1.13.2",
+    "@types/node": "^20.10.0",
+    "turbo": "1.13.2"
+  },
+  "engines": {
+    "pnpm": "8.15.1"
   },
   "keywords": [],
   "author": "",
