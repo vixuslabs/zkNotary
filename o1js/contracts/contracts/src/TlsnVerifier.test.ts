@@ -54,9 +54,9 @@ describe('TlsnVerifier.js', () => {
 
       // create an instance of Square - and deploy it to zkAppAddress
       const zkAppInstance = new TlsnVerifier(zkAppAddress);
-      const deployTxn = await Mina.transaction(deployerAccount, () => {
+      const deployTxn = await Mina.transaction(deployerAccount, async () => {
         AccountUpdate.fundNewAccount(deployerAccount);
-        zkAppInstance.deploy();
+        await zkAppInstance.deploy();
       });
       await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
       // get the initial state of Square after deployment

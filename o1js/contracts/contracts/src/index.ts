@@ -1,3 +1,3 @@
-import { Add } from './Add.js';
+import { TlsnVerifier } from './TlsnVerifier.js';
 
-export { Add };
+export { TlsnVerifier };
