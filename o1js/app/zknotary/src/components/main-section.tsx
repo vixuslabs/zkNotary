@@ -1,5 +1,7 @@
+"use client";
+
 /**
- * v0 by Vercel.
+ * v0 by Vercel. Adding back in - Shout out Vercel team, y'all are great.
  * @see https://v0.dev/t/HrbGflUm9ZS
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
@@ -40,8 +42,8 @@ export default function MainSectionContainer() {
         <Tabs className="w-full" defaultValue="config">
           <TabsList className="grid w-full grid-cols-3 gap-2 mb-4">
             <TabsTrigger value="config">Configuration</TabsTrigger>
-            <TabsTrigger value="response">Input Data</TabsTrigger>
-            <TabsTrigger value="response">Output Data</TabsTrigger>
+            <TabsTrigger value="clean">Clean Data</TabsTrigger>
+            <TabsTrigger value="raw">Raw Data</TabsTrigger>
           </TabsList>
           <TabsContent value="config">
             <form className="space-y-4">
@@ -72,7 +74,7 @@ export default function MainSectionContainer() {
               <Button type="submit">Save Changes</Button>
             </form>
           </TabsContent>
-          <TabsContent value="response">
+          <TabsContent value="clean">
             <RawDataContainer />
           </TabsContent>
           <TabsContent
