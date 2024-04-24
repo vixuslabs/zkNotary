@@ -1,6 +1,7 @@
 {
   "name": "@zknotary/contracts",
   "version": "0.1.0",
+  "license": "Apache-2.0",
   "description": "",
   "author": "",
   "keywords": [
@@ -10,11 +11,10 @@
     "zkapp"
   ],
   "type": "module",
-  "main": "build/src/index.js",
-  "types": "build/src/index.d.ts",
+  "main": "./build/src/index.js",
+  "types": "./build/src/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "buildw": "tsc --watch",
+    "build": "tsup",
     "coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "format": "prettier --write --ignore-unknown **/*",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
@@ -22,23 +22,22 @@
     "lint": "npx eslint src/* --fix"
   },
   "dependencies": {
-    "zod": "^3.22.4",
-    "json-stable-stringify": "^1.1.1"
+    "json-stable-stringify": "^1.1.1",
+    "o1js": "0.15.3",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
-    "@types/jest": "^27.0.3",
+    "@types/jest": "^29.5.12",
     "@typescript-eslint/eslint-plugin": "^5.5.0",
     "@typescript-eslint/parser": "^5.5.0",
     "eslint": "^8.7.0",
     "eslint-plugin-o1js": "^0.4.0",
-    "jest": "^27.3.1",
+    "jest": "^29.7.0",
     "prettier": "^2.3.2",
-    "ts-jest": "^27.0.7",
-    "typescript": "^4.7.2"
-  },
-  "peerDependencies": {
-    "o1js": "0.18.*"
+    "ts-jest": "^29.1.2",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.2"
   }
 }

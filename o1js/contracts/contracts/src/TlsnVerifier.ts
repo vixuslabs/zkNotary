@@ -7,12 +7,12 @@ import {
   PublicKey,
 } from 'o1js';
 
-import { SessionHeader } from './SessionHeader.js';
+import { SessionHeader } from './SessionHeader';
 
 export class TlsnVerifier extends SmartContract {
   @state(PublicKey) notaryPublicKey = State<PublicKey>();
 
-  @method verify(sessionHeader: SessionHeader, signature: Signature) {
+  @method async verify(sessionHeader: SessionHeader, signature: Signature) {
     // Get the notary public key from the contract state
     const notaryPublicKey = this.notaryPublicKey.getAndRequireEquals();
 

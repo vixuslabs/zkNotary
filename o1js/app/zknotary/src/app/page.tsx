@@ -1,7 +1,4 @@
-import Image from "next/image";
-
 import { NavBar } from "@/components/core/nav-bar";
-import MainSection from "@/components/core/main-section";
 import Footer from "@/components/core/footer";
 
 import MainSectionContainer from "@/components/main-section";

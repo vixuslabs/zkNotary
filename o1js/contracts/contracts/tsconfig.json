@@ -1,6 +1,9 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "target": "esnext",
+    "incremental": true,
+    "tsBuildInfoFile": "./build/tsconfig.tsbuildinfo",
+    "target": "es2022",
     "module": "es2022",
     "lib": ["dom", "esnext"],
     "outDir": "./build",
@@ -18,7 +21,6 @@
     "sourceMap": true,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
-    "useDefineForClassFields": false
   },
-  "include": ["./src"]
+  "include": ["./src"],
 }

@@ -12,10 +12,10 @@ import {
   Mina,
   AccountUpdate,
 } from 'o1js';
-import { TlsnVerifier } from './TlsnVerifier.js';
+import { TlsnVerifier } from '../src/TlsnVerifier';
 import fs from 'fs';
 import { z } from 'zod';
-import { RootSchema } from './schemas.js';
+import { RootSchema } from '../src/schemas';
 import { p } from 'o1js/dist/node/bindings/crypto/finite-field.js';
 
 import stableStringify from 'json-stable-stringify';

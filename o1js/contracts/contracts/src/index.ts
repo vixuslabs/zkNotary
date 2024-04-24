@@ -1,3 +1,3 @@
-import { TlsnVerifier } from './TlsnVerifier.js';
+import { TlsnVerifier } from './TlsnVerifier';
 
 export { TlsnVerifier };
