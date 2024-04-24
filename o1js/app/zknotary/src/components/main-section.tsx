@@ -5,6 +5,7 @@
  * @see https://v0.dev/t/HrbGflUm9ZS
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
+
 import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -42,8 +43,8 @@ export default function MainSectionContainer() {
         <Tabs className="w-full" defaultValue="config">
           <TabsList className="grid w-full grid-cols-3 gap-2 mb-4">
             <TabsTrigger value="config">Configuration</TabsTrigger>
-            <TabsTrigger value="clean">Clean Data</TabsTrigger>
-            <TabsTrigger value="raw">Raw Data</TabsTrigger>
+            <TabsTrigger value="input">Input Data</TabsTrigger>
+            <TabsTrigger value="raw">Output Data</TabsTrigger>
           </TabsList>
           <TabsContent value="config">
             <form className="space-y-4">
@@ -74,7 +75,7 @@ export default function MainSectionContainer() {
               <Button type="submit">Save Changes</Button>
             </form>
           </TabsContent>
-          <TabsContent value="clean">
+          <TabsContent value="input">
             <RawDataContainer />
           </TabsContent>
           <TabsContent

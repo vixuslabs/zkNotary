@@ -2,8 +2,6 @@
 
 import React from "react";
 
-import { Button } from "@/components/ui/button";
-
 import { Textarea } from "@/components/ui/textarea";
 
 const DUMMY_DATA = {
@@ -30,7 +28,7 @@ export default function RawDataContainer() {
   return (
     <Textarea
       disabled
-      className="w-full p-4 border border-gray-300 dark:border-gray-700 rounded-lg my-auto min-h-[calc(520px-36px)] h-full"
+      className="w-full p-4 border border-gray-300 dark:border-gray-700 rounded-lg my-auto min-h-[calc(520px-36px)] max-h-[calc(520px-36px)] h-full"
       value={JSON.stringify(DUMMY_DATA, null, 2)}
     />
   );
