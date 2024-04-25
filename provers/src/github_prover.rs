@@ -56,7 +56,7 @@ pub struct QueryParams {
     username: String,
     repo: String,
     since: String,
-    until: String
+    until: String,
 }
 
 pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
@@ -110,12 +110,7 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     let request = Request::builder()
         .uri(format!(
             "https://{}/{}/{}/{}/commits?since={}&until={}&page=1",
-            SERVER_DOMAIN,
-            ROUTE,
-            username,
-            repo,
-            since,
-            until
+            SERVER_DOMAIN, ROUTE, username, repo, since, until
         ))
         .header("Host", SERVER_DOMAIN)
         .header("Connection", "close")
@@ -127,6 +122,8 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     println!("Starting an MPC TLS connection with the Github server");
 
     let response = request_sender.send_request(request).await.unwrap();
+
+    println!("response: {:?}", response);
 
     debug!("Sent request");
 
@@ -164,11 +161,11 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     let mut commitment_ids = public_ranges
         .iter()
         .chain(private_ranges.iter())
-        .map(|range| builder.commit_sent(range.clone()).unwrap())
+        .map(|range| builder.commit_sent(range).unwrap())
         .collect::<Vec<_>>();
 
     // Commit to the full received transcript in one shot, as we don't need to redact anything
-    commitment_ids.push(builder.commit_recv(0..recv_len).unwrap());
+    commitment_ids.push(builder.commit_recv(&(0..recv_len)).unwrap());
 
     // Finalize, returning the notarized session
     let notarized_session = prover.finalize().await.unwrap();
@@ -181,9 +178,9 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     let mut proof_builder = notarized_session.data().build_substrings_proof();
 
     // Reveal everything but the bearer token (which was assigned commitment id 2)
-    proof_builder.reveal(commitment_ids[0]).unwrap();
-    proof_builder.reveal(commitment_ids[1]).unwrap();
-    proof_builder.reveal(commitment_ids[3]).unwrap();
+    proof_builder.reveal_by_id(commitment_ids[0]).unwrap();
+    proof_builder.reveal_by_id(commitment_ids[1]).unwrap();
+    proof_builder.reveal_by_id(commitment_ids[3]).unwrap();
 
     let substrings_proof = proof_builder.build().unwrap();
 
@@ -227,7 +224,7 @@ async fn setup_notary_connection() -> (tokio_rustls::client::TlsStream<TcpStream
 
     let notary_tls_socket = notary_connector
         // Require the domain name of notary server to be the same as that in the server cert
-        .connect("tlsnotaryserver.io".try_into().unwrap(), notary_socket)
+        .connect("localhost:7047".try_into().unwrap(), notary_socket)
         .await
         .unwrap();
 
@@ -280,18 +277,14 @@ async fn setup_notary_connection() -> (tokio_rustls::client::TlsStream<TcpStream
     let request = Request::builder()
         // Need to specify the session_id so that notary server knows the right configuration to use
         // as the configuration is set in the previous HTTP call
-        .uri(format!(
-            "https://{}:{}/notarize?sessionId={}",
-            NOTARY_HOST,
-            NOTARY_PORT,
-            notarization_response.session_id.clone()
-        ))
-        .method("GET")
+        .uri(format!("https://{NOTARY_HOST}:{NOTARY_PORT}/session"))
+        .method("POST")
         .header("Host", NOTARY_HOST)
-        .header("Connection", "Upgrade")
+        // .header("Connection", "Upgrade")
         // Need to specify this upgrade header for server to extract tcp connection later
-        .header("Upgrade", "TCP")
-        .body(Body::empty())
+        // .header("Upgrade", "TCP")
+        .header("Content-Type", "application/json")
+        .body(Body::from(payload))
         .unwrap();
 
     debug!("Sending notarization request");
@@ -350,4 +343,3 @@ async fn read_pem_file(file_path: &str) -> Result<BufReader<StdFile>> {
     let key_file = File::open(file_path).await?.into_std().await;
     Ok(BufReader::new(key_file))
 }
-

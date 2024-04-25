@@ -7,14 +7,21 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4.0"
-tlsn-prover = { git = "https://github.com/tlsnotary/tlsn", branch = "dev", features = ["tracing"] }
-tlsn-verifier = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
-tlsn-core = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
-tlsn-tls-core = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
-tlsn-tls-client = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
-notary-server = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
-mpz-core = { git = "https://github.com/privacy-scaling-explorations/mpz", rev = "ecb8c54" }
+# tlsn-prover = { git = "https://github.com/tlsnotary/tlsn", branch = "dev", features = ["tracing"] }
+# tlsn-verifier = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
+# tlsn-core = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
+# tlsn-tls-core = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
+# tlsn-tls-client = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
+# notary-server = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
 
+tlsn-prover = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f", features = ["tracing"] }
+tlsn-verifier = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f" } 
+tlsn-core = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f"}
+tlsn-tls-core = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f"}
+tlsn-tls-client = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f"}
+notary-server = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f"}
+mpz-core = { git = "https://github.com/privacy-scaling-explorations/mpz", rev = "ecb8c54" }
+# 309c37f
 futures = "0.3"
 tokio = { version = "1", features = [
     "rt",

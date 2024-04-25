@@ -1,8 +1,8 @@
 use actix_web::{web, App, HttpServer};
 mod discord_prover;
+mod github_prover;
 mod simple_prover;
 mod twitter_prover;
-mod github_prover;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

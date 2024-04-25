@@ -147,11 +147,11 @@ pub async fn notarize() -> impl Responder {
     let mut commitment_ids = public_ranges
         .iter()
         .chain(private_ranges.iter())
-        .map(|range| builder.commit_sent(range.clone()).unwrap())
+        .map(|range| builder.commit_sent(range).unwrap())
         .collect::<Vec<_>>();
 
     // Commit to the full received transcript in one shot, as we don't need to redact anything
-    commitment_ids.push(builder.commit_recv(0..recv_len).unwrap());
+    commitment_ids.push(builder.commit_recv(&(0..recv_len)).unwrap());
 
     // Finalize, returning the notarized session
     let notarized_session = prover.finalize().await.unwrap();
@@ -164,9 +164,9 @@ pub async fn notarize() -> impl Responder {
     let mut proof_builder = notarized_session.data().build_substrings_proof();
 
     // Reveal everything but the auth token (which was assigned commitment id 2)
-    proof_builder.reveal(commitment_ids[0]).unwrap();
-    proof_builder.reveal(commitment_ids[1]).unwrap();
-    proof_builder.reveal(commitment_ids[3]).unwrap();
+    proof_builder.reveal_by_id(commitment_ids[0]).unwrap();
+    proof_builder.reveal_by_id(commitment_ids[1]).unwrap();
+    proof_builder.reveal_by_id(commitment_ids[3]).unwrap();
 
     let substrings_proof = proof_builder.build().unwrap();
 
@@ -210,7 +210,10 @@ async fn setup_notary_connection() -> (tokio_rustls::client::TlsStream<TcpStream
 
     let notary_tls_socket = notary_connector
         // Require the domain name of notary server to be the same as that in the server cert
-        .connect("tlsnotaryserver.io".try_into().unwrap(), notary_socket)
+        .connect(
+            "{NOTARY_HOST}:{NOTARY_PORT}".try_into().unwrap(),
+            notary_socket,
+        )
         .await
         .unwrap();
 
