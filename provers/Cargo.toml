@@ -14,12 +14,12 @@ actix-web = "4.0"
 # tlsn-tls-client = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
 # notary-server = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
 
-tlsn-prover = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f", features = ["tracing"] }
-tlsn-verifier = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f" } 
-tlsn-core = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f"}
-tlsn-tls-core = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f"}
-tlsn-tls-client = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f"}
-notary-server = { git = "https://github.com/tlsnotary/tlsn", rev = "309c37f"}
+tlsn-prover = { git = "https://github.com/vixuslabs/tlsn", rev = "0caccc0", features = ["tracing"] }
+tlsn-verifier = { git = "https://github.com/vixuslabs/tlsn", rev = "0caccc0" } 
+tlsn-core = { git = "https://github.com/vixuslabs/tlsn", rev = "0caccc0"}
+tlsn-tls-core = { git = "https://github.com/vixuslabs/tlsn", rev = "0caccc0"}
+tlsn-tls-client = { git = "https://github.com/vixuslabs/tlsn", rev = "0caccc0"}
+notary-server = { git = "https://github.com/vixuslabs/tlsn", rev = "0caccc0"}
 mpz-core = { git = "https://github.com/privacy-scaling-explorations/mpz", rev = "ecb8c54" }
 # 309c37f
 futures = "0.3"
