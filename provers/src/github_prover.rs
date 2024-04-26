@@ -115,7 +115,7 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     // );
 
     let formatted_uri = format!(
-        "https://{}/{}/{}/{}/commits?page=1&since={}&until={}",
+        "https://{}/{}/{}/{}/commits?page=1&since={}&until={}&per_page=1",
         SERVER_DOMAIN, ROUTE, username, repo, since, until
     );
 
@@ -132,7 +132,7 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
         .header("X-GitHub-Api-Version", "2022-11-28")
         .header("Accept_Encoding", "gzip, deflate, br")
         .header("User-Agent", "zkNotary")
-        .header("Connection", "close")
+        // .header("Connection", "close")
         .header("Authorization", auth_header)
         .body(Empty::<Bytes>::new())
         .unwrap();
@@ -160,12 +160,10 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     //     serde_json::from_str::<serde_json::Value>(&String::from_utf8_lossy(&payload)).unwrap();
     // debug!("{}", serde_json::to_string_pretty(&parsed).unwrap());
 
-    println!("Closing the connection to the Github server");
-
     // Close the connection to the server
-    let mut client_socket = connection_task.await.unwrap().unwrap().io.into_inner();
-    client_socket.shutdown().await.unwrap();
-    print!("Closed the connection to the Github server");
+    // let mut client_socket = connection_task.await.unwrap().unwrap().io.into_inner();
+    // client_socket.shutdown().await.unwrap();
+    // print!("Closed the connection to the Github server");
 
     // The Prover task should be done now, so we can grab it.
     let prover = prover_task.await.unwrap().unwrap();
@@ -201,6 +199,8 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
 
     let mut proof_builder = notarized_session.data().build_substrings_proof();
 
+    println!("commitment_ids: {:#?}", commitment_ids);
+
     // Reveal everything but the bearer token (which was assigned commitment id 2)
     proof_builder.reveal_by_id(commitment_ids[0]).unwrap();
     proof_builder.reveal_by_id(commitment_ids[1]).unwrap();
@@ -217,6 +217,11 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
       "proof": proof,
       "notarized_session": notarized_session
     });
+
+    println!("Closing the connection to the Github server");
+    let mut client_socket = connection_task.await.unwrap().unwrap().io.into_inner();
+    client_socket.shutdown().await.unwrap();
+    print!("Closed the connection to the Github server");
 
     HttpResponse::Ok()
         .content_type("application/json")
