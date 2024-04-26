@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   o1js:
-    specifier: 0.18.*
-    version: 0.18.0
+    specifier: ^0.17.0
+    version: 0.17.0
   zod:
     specifier: ^3.22.4
     version: 3.22.4
@@ -22,6 +22,9 @@ devDependencies:
   '@types/jest':
     specifier: ^27.0.3
     version: 27.5.2
+  '@types/node':
+    specifier: ^20.12.7
+    version: 20.12.7
   '@typescript-eslint/eslint-plugin':
     specifier: ^5.5.0
     version: 5.62.0(@typescript-eslint/parser@5.62.0)(eslint@8.57.0)(typescript@4.9.5)
@@ -3678,8 +3681,8 @@ packages:
     resolution: {integrity: sha512-ub5E4+FBPKwAZx0UwIQOjYWGHTEq5sPqHQNRN8Z9e4A7u3Tj1weLJsL59yH9vmvqEtBHaOmT6cYQKIZOxp35FQ==}
     dev: true
 
-  /o1js@0.18.0:
-    resolution: {integrity: sha512-A4XFfRLUHxB8ZUzctpxmYA4kBi3ZRwSgeK/KKuWxf2kDmaxjWOxbCzH/1wHelom4QKIgSIaJpXkAtR0jJv7tqw==}
+  /o1js@0.17.0:
+    resolution: {integrity: sha512-OPQc3jBG2X5z7yI2mcovzRVbd91Q2D/npep14+g0wBdGXpyyAFdaz59YjVlEsPcY1Gmh2L+LCFhVA2fQ+1ogIg==}
     engines: {node: '>=16.4.0'}
     hasBin: true
     dependencies:
