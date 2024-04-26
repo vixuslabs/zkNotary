@@ -1,5 +1,4 @@
-// import { TlsnVerifier } from './TlsnVerifier';
-
+import fs from 'fs';
 import {
   Field,
   SmartContract,
@@ -11,62 +10,98 @@ import {
   PrivateKey,
   Mina,
   AccountUpdate,
+  ZkappPublicInput,
 } from 'o1js';
+import { SessionHeader } from '../src/SessionHeader';
 import { TlsnVerifier } from '../src/TlsnVerifier';
-import fs from 'fs';
-import { z } from 'zod';
-import { RootSchema } from '../src/schemas';
-import { p } from 'o1js/dist/node/bindings/crypto/finite-field.js';
 
-import stableStringify from 'json-stable-stringify';
+describe('TlsnVerifier', () => {
+  describe('Standalone verification', () => {
+    it('should verify a valid proof.', () => {
+      const jsonData = fs.readFileSync('tests/valid_proof.json', 'utf-8');
+      const [ sessionHeader, signature ] = SessionHeader.fromJson(jsonData);
+      const notaryPublicKey = PublicKey.fromBase58("B62qowWuY2PsBZsm64j4Uu2AB3y4L6BbHSvtJcSLcsVRXdiuycbi8Ws");
+      const validSignature = signature.verify(notaryPublicKey, sessionHeader.toFields());
+      validSignature.assertTrue("Signature is not valid");
+    });
+  
+    it('should not verify an invalid proof.', () => {
+      const jsonData = fs.readFileSync('tests/invalid_proof.json', 'utf-8');
+      const [ sessionHeader, signature ] = SessionHeader.fromJson(jsonData);
+      const notaryPublicKey = PublicKey.fromBase58("B62qowWuY2PsBZsm64j4Uu2AB3y4L6BbHSvtJcSLcsVRXdiuycbi8Ws");
+      const validSignature = signature.verify(notaryPublicKey, sessionHeader.toFields());
+      expect(() => validSignature.assertTrue()).toThrow();
+    });
+  
+    it('should not verify a proof with a different notary public key.', () => {
+      const jsonData = fs.readFileSync('tests/valid_proof.json', 'utf-8');
+      const [ sessionHeader, signature ] = SessionHeader.fromJson(jsonData);
+      const notaryPublicKey = PublicKey.fromBase58("B62qnw2dEQgvJWVh4wqPP141gqMdwUWUkjJsByxmTi7csKVC9M4C3P2");
+      const validSignature = signature.verify(notaryPublicKey, sessionHeader.toFields());
+      expect(() => validSignature.assertTrue()).toThrow();
+    });
+  });
 
-let count = 0;
+  describe('Verification on a local blockchain', () => {
+    let deployerKey: PrivateKey,
+      deployerAccount: PublicKey,
+      senderKey: PrivateKey,
+      senderAccount: PublicKey,
+      zkAppInstance: TlsnVerifier;
 
-describe('TlsnVerifier.js', () => {
-  describe('TlsnVerifier()', async () => {
-    // Read the JSON file
-    const jsonData = fs.readFileSync('src/simple_proof_kimchi.json', 'utf-8');
-
-    // Parse the JSON data
-    const parsedData = JSON.parse(jsonData);
-
-    // Validate the parsed data using Zod
-    const result = RootSchema.safeParse(parsedData);
-
-    console.log('count: ', count++);
-
-    if (result.success) {
-      // Data is valid
-      const tlsnProof = result.data;
-      console.log('Valid data:', tlsnProof);
-
-      const Local = Mina.LocalBlockchain({ proofsEnabled: false });
-      Mina.setActiveInstance(Local);
-      const { privateKey: deployerKey, publicKey: deployerAccount } =
-        Local.testAccounts[0];
-      const { privateKey: senderKey, publicKey: senderAccount } =
-        Local.testAccounts[1];
-      // ----------------------------------------------------
-
-      // Create a public/private key pair. The public key is your address and where you deploy the zkApp to
+    async function localDeploy(notaryPublicKey: PublicKey) {
       const zkAppPrivateKey = PrivateKey.random();
       const zkAppAddress = zkAppPrivateKey.toPublicKey();
 
-      // create an instance of Square - and deploy it to zkAppAddress
-      const zkAppInstance = new TlsnVerifier(zkAppAddress);
+      zkAppInstance = new TlsnVerifier(zkAppAddress);
       const deployTxn = await Mina.transaction(deployerAccount, async () => {
         AccountUpdate.fundNewAccount(deployerAccount);
-        await zkAppInstance.deploy();
+        zkAppInstance.deploy();
+        zkAppInstance.notaryPublicKey.set(notaryPublicKey);
       });
       await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
-      // get the initial state of Square after deployment
-      const notaryPublicKey = zkAppInstance.notaryPublicKey.get();
-      console.log('state after init:', notaryPublicKey.toString());
-
-      console.log('count: ', count++);
-    } else {
-      // Data is invalid
-      console.error('Invalid data:', result.error);
     }
+
+    beforeAll(async () => {
+      const Local = Mina.LocalBlockchain({ proofsEnabled: false });
+      Mina.setActiveInstance(Local);
+      ({ privateKey: deployerKey, publicKey: deployerAccount } =
+        Local.testAccounts[0]);
+      ({ privateKey: senderKey, publicKey: senderAccount } =
+        Local.testAccounts[1]);
+    });
+
+    it('should verify a valid proof.', async () => {
+      const jsonData = fs.readFileSync('tests/valid_proof.json', 'utf-8');
+      const [ sessionHeader, signature ] = SessionHeader.fromJson(jsonData);
+      await localDeploy(PublicKey.fromBase58("B62qowWuY2PsBZsm64j4Uu2AB3y4L6BbHSvtJcSLcsVRXdiuycbi8Ws"));    
+      const txn1 = await Mina.transaction(senderAccount, () => {
+        zkAppInstance.verify(sessionHeader, signature);
+      });
+      await txn1.prove();
+      await txn1.sign([senderKey]).send();
+    });
+
+    // it('should not verify an invalid proof', async () => {
+    //   // Read the JSON file containing the proof
+    //   const jsonData = fs.readFileSync('tests/invalid_proof.json', 'utf-8');
+    //   const [ sessionHeader, signature ] = SessionHeader.fromJson(jsonData);
+    //   await localDeploy(PublicKey.fromBase58("B62qowWuY2PsBZsm64j4Uu2AB3y4L6BbHSvtJcSLcsVRXdiuycbi8Ws"));    
+    //   await expect(Mina.transaction(senderAccount, () => {
+    //       zkAppInstance.verify(sessionHeader, signature);
+    //   })).resolves.toThrow("Signature is not valid");
+    // });
+
+    // it('should not verify a proof with a different notary public key.', async () => {
+    //   // Read the JSON file containing the proof
+    //   const jsonData = fs.readFileSync('tests/valid_proof.json', 'utf-8');
+    //   const [ sessionHeader, signature ] = SessionHeader.fromJson(jsonData);
+    //   await localDeploy(PublicKey.fromBase58("B62qnw2dEQgvJWVh4wqPP141gqMdwUWUkjJsByxmTi7csKVC9M4C3P2"));    
+    //   const txn1 = await Mina.transaction(senderAccount, () => {
+    //     zkAppInstance.verify(sessionHeader, signature);
+    //   });
+    //   await txn1.prove();
+    //   await txn1.sign([senderKey]).send();
+    // });
   });
 });
