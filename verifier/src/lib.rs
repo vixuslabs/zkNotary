@@ -63,7 +63,7 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> 
     let mut output = String::new();
     let formatted_message = format!(
         "Successfully verified that the bytes below came from a session with {:?} at {}.\n",
-        session_info.server_name, time
+        server_name, time
     );
     output.push_str(&formatted_message);
     output
@@ -85,4 +85,3 @@ fn notary_pubkey_from_str(pem_str: &str) -> Result<PublicKey, Box<dyn std::error
 
     Ok(public_key)
 }
-
