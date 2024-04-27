@@ -1,10 +1,13 @@
 use actix_web::{HttpResponse, Responder};
-use futures::AsyncWriteExt;
-use hyper::{Body, Request, StatusCode};
+use http_body_util::Empty;
+use hyper::{body::Bytes, Request, StatusCode};
+use hyper_util::rt::TokioIo;
 use std::ops::Range;
 use tlsn_core::proof::TlsProof;
-use tlsn_prover::tls::{Prover, ProverConfig};
+use tokio::io::AsyncWriteExt as _;
 use tokio_util::compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt};
+
+use tlsn_prover::tls::{Prover, ProverConfig};
 
 // Setting of the application server
 const SERVER_DOMAIN: &str = "example.com";
@@ -53,7 +56,7 @@ pub async fn notarize() -> impl Responder {
 
     // Attach the hyper HTTP client to the MPC TLS connection
     let (mut request_sender, connection) =
-        hyper::client::conn::handshake(mpc_tls_connection.compat())
+        hyper::client::conn::http1::handshake(TokioIo::new(mpc_tls_connection.compat()))
             .await
             .unwrap();
 
@@ -70,7 +73,7 @@ pub async fn notarize() -> impl Responder {
         .header("Accept-Encoding", "identity")
         .header("Connection", "close")
         .header("User-Agent", USER_AGENT)
-        .body(Body::empty())
+        .body(Empty::<Bytes>::new())
         .unwrap();
 
     println!("Starting an MPC TLS connection with the server");
@@ -84,7 +87,7 @@ pub async fn notarize() -> impl Responder {
 
     // Close the connection to the server
     let mut client_socket = connection_task.await.unwrap().unwrap().io.into_inner();
-    client_socket.close().await.unwrap();
+    client_socket.shutdown().await.unwrap();
 
     // The Prover task should be done now, so we can grab the Prover.
     let prover = prover_task.await.unwrap().unwrap();
@@ -115,12 +118,12 @@ pub async fn notarize() -> impl Responder {
     // Commit to each range of the public outbound data which we want to disclose
     let sent_commitments: Vec<_> = sent_public_ranges
         .iter()
-        .map(|r| builder.commit_sent(r.clone()).unwrap())
+        .map(|r| builder.commit_sent(r).unwrap())
         .collect();
     // Commit to each range of the public inbound data which we want to disclose
     let recv_commitments: Vec<_> = recv_public_ranges
         .iter()
-        .map(|r| builder.commit_recv(r.clone()).unwrap())
+        .map(|r| builder.commit_recv(r).unwrap())
         .collect();
 
     // Finalize, returning the notarized session
@@ -131,10 +134,10 @@ pub async fn notarize() -> impl Responder {
 
     // Reveal all the public ranges
     for commitment_id in sent_commitments {
-        proof_builder.reveal(commitment_id).unwrap();
+        proof_builder.reveal_by_id(commitment_id).unwrap();
     }
     for commitment_id in recv_commitments {
-        proof_builder.reveal(commitment_id).unwrap();
+        proof_builder.reveal_by_id(commitment_id).unwrap();
     }
 
     let substrings_proof = proof_builder.build().unwrap();

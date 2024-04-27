@@ -1,0 +1,29 @@
+{
+  "name": "zknotary-verifier--root",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "turbo dev --filter apps",
+    "start": "turbo start",
+    "clean:workspaces": "turbo clean",
+    "typecheck": "turbo typecheck",
+    "lint": "turbo lint",
+    "postinstall": "manypkg check"
+  },
+  "engines": {
+    "pnpm": "8.15.*",
+    "node": ">=18.18.0 <19.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@manypkg/cli": "^0.21.4",
+    "@turbo/gen": "1.13.2",
+    "@types/json-stable-stringify": "^1.0.36",
+    "@types/node": "^20.10.0",
+    "turbo": "1.13.2",
+    "typescript": "^5.3.2"
+  }
+}
