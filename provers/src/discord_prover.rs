@@ -183,7 +183,7 @@ pub async fn notarize() -> impl Responder {
 
     let res = serde_json::json!({
       "proof": proof,
-      "notarized_session": notarized_session
+      // "notarized_session": notarized_session
     });
 
     HttpResponse::Ok()

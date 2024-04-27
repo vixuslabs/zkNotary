@@ -29,7 +29,7 @@ async fn main() -> std::io::Result<()> {
                 web::get().to(etherscan_prover::notarize),
             )
     })
-    .bind(("127.0.0.1", 3000))?
+    .bind(("127.0.0.1", 8080))?
     .run()
     .await
 }

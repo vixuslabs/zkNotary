@@ -170,7 +170,7 @@ pub async fn notarize(query_params: web::Query<EtherscanQueryParams>) -> impl Re
 
     let res = serde_json::json!({
         "proof": proof,
-        "notarized_session": notarized_session,
+        // "notarized_session": notarized_session,
     });
 
     println!("Closing the connection to the Etherscan API");

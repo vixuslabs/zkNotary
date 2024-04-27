@@ -214,7 +214,7 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
 
     let res = serde_json::json!({
       "proof": proof,
-      "notarized_session": notarized_session
+      // "notarized_session": notarized_session
     });
 
     println!("Closing the connection to the Github server");

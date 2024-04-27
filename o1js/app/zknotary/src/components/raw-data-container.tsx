@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { Textarea } from "@/components/ui/textarea";
+import { useExamplesStore, NotorizedRawData } from "./examples-store";
 
 const DUMMY_DATA = {
   test1: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
@@ -24,12 +25,43 @@ const DUMMY_DATA = {
     "Sed auctor, libero eget fringilla convallis, leo ex cursus turpis, eu finibus mauris nibh sed ligula. Proin auctor enim ipsum, vel feugiat tellus rhoncus at. Mauris vitae volutpat mauris.",
 };
 
+const stringifiedDummyData = JSON.stringify(DUMMY_DATA, null, 2);
+
 export default function RawDataContainer() {
+  const { notorizedData, active } = useExamplesStore((state) => state);
+  // const [jsonData, setJsonData] = useState<NotarizedRawData | null>();
+  const [jsonData, setJsonData] = useState<string>(stringifiedDummyData);
+
+  useEffect(() => {
+    console.log(notorizedData);
+    console.log(active);
+
+    switch (active) {
+      case "etherscan":
+        let etherscanJson = JSON.stringify(notorizedData.etherscan, null, 2);
+        setJsonData(etherscanJson);
+        break;
+      case "github":
+        let json = JSON.stringify(notorizedData.github, null, 2);
+        setJsonData(json);
+        break;
+      default:
+        setJsonData(DUMMY_DATA);
+        break;
+    }
+
+    // if (active === "etherscan")
+    //   setJsonData(JSON.stringify(notorizedData.etherscan, null, 2) as string);
+    // if (active === "github") setJsonData(notorizedData.github);
+    //
+    // setJsonData(JSON.stringify(DUMMY_DATA, null, 2) as string);
+  }, [notorizedData, active]);
+
   return (
     <Textarea
       disabled
       className="w-full p-4 border border-gray-300 dark:border-gray-700 rounded-lg my-auto min-h-[calc(520px-36px)] max-h-[calc(520px-36px)] h-full"
-      value={JSON.stringify(DUMMY_DATA, null, 2)}
+      value={jsonData}
     />
   );
 }
