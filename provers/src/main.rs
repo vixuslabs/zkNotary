@@ -12,9 +12,13 @@ use hyper_util::rt::TokioIo;
 use notary_server::{ClientType, NotarizationSessionRequest, NotarizationSessionResponse};
 use rustls::{Certificate, ClientConfig, RootCertStore};
 use std::sync::Arc;
+use std::time::Duration;
+use tlsn_core::proof::{SessionProof, TlsProof};
 use tokio::net::TcpStream;
 use tokio_rustls::TlsConnector;
 use tracing::debug;
+
+use std::fmt;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -156,4 +160,83 @@ pub async fn setup_notary_connection(
         notary_tls_socket.into_inner(),
         notarization_response.session_id,
     )
+}
+
+#[derive(Debug)]
+pub enum FormatError {
+    VerificationError(String),
+    ParseError(String),
+}
+
+impl fmt::Display for FormatError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            FormatError::VerificationError(ref desc) => write!(f, "Verification error: {}", desc),
+            FormatError::ParseError(ref err) => write!(f, "UTF-8 error: {}", err),
+        }
+    }
+}
+
+// impl From<std::string::FromUtf8Error> for FormatError {
+//     fn from(err: std::string::FromUtf8Error) -> FormatError {
+//         FormatError::Utf8Error(err)
+//     }
+// }
+
+pub fn format(proof_json: serde_json::Value) -> Result<String, FormatError> {
+    let proof: TlsProof = serde_json::from_value(proof_json).map_err(|e| -> FormatError {
+        FormatError::ParseError(format!("Failed to deserialize proof: {}", e))
+    })?;
+
+    let TlsProof {
+        // The session proof establishes the identity of the server and the commitments
+        // to the TLS transcript.
+        session,
+        // The substrings proof proves select portions of the transcript, while redacting
+        // anything the Prover chose not to disclose.
+        substrings,
+    } = proof;
+
+    let SessionProof {
+        // The session header that was signed by the Notary is a succinct commitment to the TLS transcript.
+        header,
+        // This is the server name, checked against the certificate chain shared in the TLS handshake.
+        session_info,
+        signature: _,
+    } = session;
+
+    // The time at which the session was recorded
+    let time = chrono::DateTime::UNIX_EPOCH + Duration::from_secs(header.time());
+
+    // Verify the substrings proof against the session header.
+    //
+    // This returns the redacted transcripts
+    let (mut sent, mut recv) = substrings
+        .verify(&header)
+        // .map_err(|e| JsValue::from_str(&format!("Verification of substrings failed: {}", e)))?;
+        .map_err(|e| {
+            FormatError::VerificationError(format!("Verification of substrings failed: {}", e))
+        })?;
+
+    // Replace the bytes which the Prover chose not to disclose with 'X'
+    sent.set_redacted(b'X');
+    recv.set_redacted(b'X');
+
+    let mut output = String::new();
+    let formatted_message = format!(
+        "Successfully verified that the bytes below came from a session with {:?} at {}.\n",
+        session_info.server_name, time
+    );
+    output.push_str(&formatted_message);
+    output
+        .push_str("Note that the bytes which the Prover chose not to disclose are shown as X.\n\n");
+    output.push_str("Bytes sent:\n\n");
+    let formatted_message = format!("{}", String::from_utf8(sent.data().to_vec()).unwrap());
+    output.push_str(&formatted_message);
+    output.push_str("\n\n");
+    output.push_str("Bytes received:\n\n");
+    let formatted_message = format!("{}", String::from_utf8(recv.data().to_vec()).unwrap());
+    output.push_str(&formatted_message);
+
+    Ok(output)
 }

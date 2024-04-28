@@ -12,7 +12,7 @@ use tracing::debug;
 
 use tlsn_prover::tls::{Prover, ProverConfig};
 
-use crate::setup_notary_connection;
+use crate::{format, setup_notary_connection};
 
 // Setting of the application server
 const SERVER_DOMAIN: &str = "api.github.com";
@@ -207,17 +207,26 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
 
     let substrings_proof = proof_builder.build().unwrap();
 
-    let proof = TlsProof {
+    let true_proof = TlsProof {
         session: session_proof,
         substrings: substrings_proof,
     };
 
-    let res = serde_json::json!(proof);
-
+    //
     // let res = serde_json::json!({
-    //   "proof": proof,
-    //   // "notarized_session": notarized_session
+    //     "proof": true_proof,
+    //     "readable_proof": readable_proof
     // });
+
+    let json_proof = serde_json::json!(true_proof);
+
+    let readable_proof = format(json_proof).unwrap();
+
+    let res = serde_json::json!({
+      "proof": true_proof,
+      "readable_proof": readable_proof
+      // "notarized_session": notarized_session
+    });
 
     println!("Closing the connection to the Github server");
     let mut client_socket = connection_task.await.unwrap().unwrap().io.into_inner();
