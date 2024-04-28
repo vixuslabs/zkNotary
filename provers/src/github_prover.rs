@@ -212,21 +212,16 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
         substrings: substrings_proof,
     };
 
-    //
-    // let res = serde_json::json!({
-    //     "proof": true_proof,
-    //     "readable_proof": readable_proof
-    // });
-
     let json_proof = serde_json::json!(true_proof);
 
-    let readable_proof = format(json_proof).unwrap();
+    // let readable_proof = format(json_proof).unwrap();
 
-    let res = serde_json::json!({
-      "proof": true_proof,
-      "readable_proof": readable_proof
-      // "notarized_session": notarized_session
-    });
+    let res = serde_json::json!(json_proof);
+
+    // let res = serde_json::json!({
+    //   "proof": true_proof,
+    //   "readable_proof": readable_proof
+    // });
 
     println!("Closing the connection to the Github server");
     let mut client_socket = connection_task.await.unwrap().unwrap().io.into_inner();

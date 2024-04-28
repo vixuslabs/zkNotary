@@ -13,6 +13,8 @@ use tlsn_prover::tls::{Prover, ProverConfig};
 
 use crate::setup_notary_connection;
 
+use crate::format;
+
 // Setting of the notary server
 const NOTARY_HOST: &str = "127.0.0.1";
 const NOTARY_PORT: u16 = 7047;
@@ -163,15 +165,21 @@ pub async fn notarize(query_params: web::Query<EtherscanQueryParams>) -> impl Re
 
     let substrings_proof = proof_builder.build().unwrap();
 
-    let proof = TlsProof {
+    let true_proof = TlsProof {
         session: session_proof,
         substrings: substrings_proof,
     };
 
-    let res = serde_json::json!({
-        "proof": proof,
-        // "notarized_session": notarized_session,
-    });
+    let json_proof = serde_json::json!(true_proof);
+
+    // let readable_proof = format(json_proof).unwrap();
+
+    // let res = serde_json::json!({
+    //   "proof": true_proof,
+    //   "readable_proof": readable_proof
+    // });
+
+    let res = serde_json::json!(json_proof);
 
     println!("Closing the connection to the Etherscan API");
     let mut client_socket = connection_task.await.unwrap().unwrap().io.into_inner();

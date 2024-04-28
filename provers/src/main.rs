@@ -177,12 +177,6 @@ impl fmt::Display for FormatError {
     }
 }
 
-// impl From<std::string::FromUtf8Error> for FormatError {
-//     fn from(err: std::string::FromUtf8Error) -> FormatError {
-//         FormatError::Utf8Error(err)
-//     }
-// }
-
 pub fn format(proof_json: serde_json::Value) -> Result<String, FormatError> {
     let proof: TlsProof = serde_json::from_value(proof_json).map_err(|e| -> FormatError {
         FormatError::ParseError(format!("Failed to deserialize proof: {}", e))
@@ -211,12 +205,9 @@ pub fn format(proof_json: serde_json::Value) -> Result<String, FormatError> {
     // Verify the substrings proof against the session header.
     //
     // This returns the redacted transcripts
-    let (mut sent, mut recv) = substrings
-        .verify(&header)
-        // .map_err(|e| JsValue::from_str(&format!("Verification of substrings failed: {}", e)))?;
-        .map_err(|e| {
-            FormatError::VerificationError(format!("Verification of substrings failed: {}", e))
-        })?;
+    let (mut sent, mut recv) = substrings.verify(&header).map_err(|e| {
+        FormatError::VerificationError(format!("Verification of substrings failed: {}", e))
+    })?;
 
     // Replace the bytes which the Prover chose not to disclose with 'X'
     sent.set_redacted(b'X');
