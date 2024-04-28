@@ -24,6 +24,7 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> 
     } = proof;
 
     // Verify the session proof against the Notary's public key
+    // TODO REMOVE THIS
     match notary_pubkey_from_str(notary_pubkey) {
         Ok(public_key) => {
             session
