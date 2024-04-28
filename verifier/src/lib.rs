@@ -64,7 +64,7 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> 
     let mut output = String::new();
     let formatted_message = format!(
         "Successfully verified that the bytes below came from a session with {:?} at {}.\n",
-        server_name, time
+        session_info.server_name, time
     );
     output.push_str(&formatted_message);
     output

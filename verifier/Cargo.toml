@@ -1,6 +1,6 @@
 [package]
 name = "zknotary-verifier"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Rafael Campos <racampos@gmail.com>"]
 edition = "2018"
 
@@ -14,12 +14,12 @@ default = ["console_error_panic_hook"]
 getrandom = { version = "0.2.10", features = ["js"] }
 wasm-bindgen = "0.2.84"
 # tlsn-core = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
-tlsn-core = { git = "https://github.com/vixuslabs/tlsn", rev = "0caccc0"}
+tlsn-core = { git = "https://github.com/vixuslabs/tlsn", rev = "0caccc0" }
 elliptic-curve = { version = "0.13.5", features = ["pkcs8"] }
 serde_json = "1.0"
 chrono = "0.4"
 p256 = { version = "0.13", features = ["ecdsa"] }
-pem = "0.8.3" 
+pem = "0.8.3"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
