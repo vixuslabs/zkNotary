@@ -2,10 +2,11 @@ import {
   Field,
   Provable,
   Struct,
-  Signature,
 } from 'o1js';
-import { RootSchema } from './schemas';
+import { HeaderSchema } from './schemas';
+import { z } from 'zod';
 
+type SessionHeaderType = z.infer<typeof HeaderSchema>;
 
 // Convert a number to a byte array
 function numberToBytes(num: number) {
@@ -20,7 +21,6 @@ function bytesToFields(bytes: Uint8Array): Field[] {
   bytes.forEach((byte: number) => fields.push(Field(byte)));
   return fields;
 }
-
 
 export class SessionHeader extends Struct ({
   encoderSeed: Provable.Array(Field, 32),
@@ -49,40 +49,20 @@ export class SessionHeader extends Struct ({
     ];
   }
 
-  static fromJson(jsonData: string): [ SessionHeader, Signature ] {
-    // Parse the JSON data
-    const parsedData = JSON.parse(jsonData);
-    // Replace the string "secp256r1" for its corresponding byte representation.
-    parsedData.session.header.handshake_summary.server_public_key.group = [0, 65];
-    // Validate the parsed data using Zod
-    const result = RootSchema.safeParse(parsedData);
-    if (result.success) {
-      const tlsnProof = result.data;
-      const signature = Signature.fromBase58(tlsnProof.session.signature);
-      const encoder_seed = tlsnProof.session.header.encoder_seed;
-      const merkle_root = tlsnProof.session.header.merkle_root;
-      const sent_len = numberToBytes(tlsnProof.session.header.sent_len);
-      const recv_len = numberToBytes(tlsnProof.session.header.recv_len);
-      const time = numberToBytes(tlsnProof.session.header.handshake_summary.time);
-      const group = tlsnProof.session.header.handshake_summary.server_public_key.group;
-      const key = tlsnProof.session.header.handshake_summary.server_public_key.key;
-      const handshake_commitment = tlsnProof.session.header.handshake_summary.handshake_commitment;
-      return [ new SessionHeader({
-        encoderSeed: bytesToFields(new Uint8Array(encoder_seed)),
-        merkleRoot: bytesToFields(new Uint8Array(merkle_root)),
-        sentLen: bytesToFields(new Uint8Array(sent_len)),
-        recvLen: bytesToFields(new Uint8Array(recv_len)),
-        handshakeSummary: {
-          time: bytesToFields(new Uint8Array(time)),
-          serverPublicKey: {
-            group: bytesToFields(new Uint8Array(group)),
-            key: bytesToFields(new Uint8Array(key)),
-          },
-          handshakeCommitment: bytesToFields(new Uint8Array(handshake_commitment)),
+  static new(header: SessionHeaderType) {
+    return new SessionHeader({
+      encoderSeed: bytesToFields(new Uint8Array(header.encoder_seed)),
+      merkleRoot: bytesToFields(new Uint8Array(header.merkle_root)),
+      sentLen: bytesToFields(new Uint8Array(numberToBytes(header.sent_len))),
+      recvLen: bytesToFields(new Uint8Array(numberToBytes(header.recv_len))),
+      handshakeSummary: {
+        time: bytesToFields(new Uint8Array(numberToBytes(header.handshake_summary.time))),
+        serverPublicKey: {
+          group: bytesToFields(new Uint8Array(header.handshake_summary.server_public_key.group)),
+          key: bytesToFields(new Uint8Array(header.handshake_summary.server_public_key.key)),
         },
-      }), signature ];
-    } else {
-      throw new Error(result.error.errors[0].message);
-    }
+        handshakeCommitment: bytesToFields(new Uint8Array(header.handshake_summary.handshake_commitment)),
+      },
+    });
   }
 }

@@ -2,11 +2,17 @@ import {
     Field,
     Provable,
     Struct,
-    Signature,
+    Signature as MinaSignature,
+    Sign,
   } from 'o1js';
   import { RootSchema } from './schemas';
   import { SessionHeader } from './SessionHeader';
-  
+  import { SessionInfo } from './SessionInfo';
+  import { z } from 'zod';
+
+  type RootType = z.infer<typeof RootSchema>;
+  type SessionType = RootType['session'];
+  type SubstringsType = RootType['substrings'];
   
   // Convert a number to a byte array
   function numberToBytes(num: number) {
@@ -22,23 +28,39 @@ import {
     return fields;
   }
 
-  class SessionInfo extends Struct({}) {
+  class Signature extends Struct({
+    MinaSchnorr: MinaSignature,
+  }) {
     toFields(): Field[] {
-      return [];
+      return this.MinaSchnorr.toFields();
+    }
+  
+    static new(signature: string): Signature {
+      return new Signature({
+        MinaSchnorr: MinaSignature.fromBase58(signature),
+      });
     }
   }
-
+  
   class Session extends Struct({
     header: SessionHeader,
-    signature: Field,
+    signature: Signature,
     session_info: SessionInfo,
   }) {
     toFields(): Field[] {
       return [
         ...this.header.toFields(),
-        this.signature,
+        ...this.signature.toFields(),
         ...this.session_info.toFields(),
       ];
+    }
+
+    static new(header: SessionHeader, signature: Signature, session_info: SessionInfo): Session {
+      return new Session({
+        header: header,
+        signature: signature,
+        session_info: session_info,
+      });
     }
   }
 
@@ -87,7 +109,9 @@ import {
       ];
     }
   
-    static fromJson(jsonData: string): [ SessionHeader, Signature ] {
+    static fromJson(jsonData: string): Proof {
+     
+      
       // Parse the JSON data
       const parsedData = JSON.parse(jsonData);
       // Replace the string "secp256r1" for its corresponding byte representation.
@@ -96,29 +120,20 @@ import {
       const result = RootSchema.safeParse(parsedData);
       if (result.success) {
         const tlsnProof = result.data;
-        const signature = Signature.fromBase58(tlsnProof.session.signature);
-        const encoder_seed = tlsnProof.session.header.encoder_seed;
-        const merkle_root = tlsnProof.session.header.merkle_root;
-        const sent_len = numberToBytes(tlsnProof.session.header.sent_len);
-        const recv_len = numberToBytes(tlsnProof.session.header.recv_len);
-        const time = numberToBytes(tlsnProof.session.header.handshake_summary.time);
-        const group = tlsnProof.session.header.handshake_summary.server_public_key.group;
-        const key = tlsnProof.session.header.handshake_summary.server_public_key.key;
-        const handshake_commitment = tlsnProof.session.header.handshake_summary.handshake_commitment;
-        return [ new SessionHeader({
-          encoderSeed: bytesToFields(new Uint8Array(encoder_seed)),
-          merkleRoot: bytesToFields(new Uint8Array(merkle_root)),
-          sentLen: bytesToFields(new Uint8Array(sent_len)),
-          recvLen: bytesToFields(new Uint8Array(recv_len)),
-          handshakeSummary: {
-            time: bytesToFields(new Uint8Array(time)),
-            serverPublicKey: {
-              group: bytesToFields(new Uint8Array(group)),
-              key: bytesToFields(new Uint8Array(key)),
-            },
-            handshakeCommitment: bytesToFields(new Uint8Array(handshake_commitment)),
-          },
-        }), signature ];
+        const session = tlsnProof.session;
+        const substrings = tlsnProof.substrings;
+        
+        return new Proof({
+            session: Session.new(
+                SessionHeader.new(session.header),
+                Signature.new(session.signature),
+                SessionInfo.new(session.session_info),
+            ),
+            substrings: Substrings.new(
+                Openings.new(substrings.openings),
+                InclusionProof.new(substrings.inclusion_proof),
+            ),
+        });
       } else {
         throw new Error(result.error.errors[0].message);
       }

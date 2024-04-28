@@ -72,7 +72,7 @@ const ServerNameSchema = z.object({
   Dns: z.string(),
 });
 
-const SessionInfoSchema = z.object({
+export const SessionInfoSchema = z.object({
   server_name: ServerNameSchema,
   handshake_decommitment: HandshakeDecommitmentSchema,
 });
@@ -91,7 +91,7 @@ const HandshakeSummarySchema = z.object({
   handshake_commitment: z.array(z.number()),
 });
 
-const HeaderSchema = z.object({
+export const HeaderSchema = z.object({
   encoder_seed: z.array(z.number()),
   merkle_root: z.array(z.number()),
   sent_len: z.number(),
