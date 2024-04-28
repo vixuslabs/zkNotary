@@ -1,14 +1,18 @@
 [package]
 name = "zknotary-verifier"
-version = "1.0.1"
-authors = ["Rafael Campos <racampos@gmail.com>"]
+version = "1.1.0"
+authors = ["Rafael Campos <rafa@vixuslabs.com>", "Tito Thompson<tito@vixuslabs.com>"]
 edition = "2018"
+title = "zknotary-verifier"
+description = "package for tlsn notary proof verification in wasm"
+license = "Apache-2.0"
+repository = "https://github.com/vixuslabs/zkNotary/tree/main/verifier"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["console_error_panic_hook"]
+# default = ["console_error_panic_hook"]
 
 [dependencies]
 getrandom = { version = "0.2.10", features = ["js"] }
@@ -25,7 +29,7 @@ pem = "0.8.3"
 # logging them with `console.error`. This is great for development, but requires
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
-console_error_panic_hook = { version = "0.1.7", optional = true }
+# console_error_panic_hook = { version = "0.1.7", optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"

@@ -1,5 +1,3 @@
-mod utils;
-
 use elliptic_curve::pkcs8::DecodePublicKey;
 use p256::PublicKey;
 use pem::parse;
@@ -44,7 +42,7 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> 
         header,
         // This is the server name, checked against the certificate chain shared in the TLS handshake.
         session_info,
-        signature,
+        signature: _,
     } = session;
 
     // The time at which the session was recorded
