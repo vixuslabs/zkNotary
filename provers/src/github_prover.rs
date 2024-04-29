@@ -1,18 +1,17 @@
 use actix_web::{web, HttpResponse, Responder};
-use eyre::Result;
-use http_body_util::{BodyExt as _, Empty};
+use http_body_util::Empty;
 use hyper::{body::Bytes, Request, StatusCode};
 use hyper_util::rt::TokioIo;
 use serde::{Deserialize, Serialize};
-use std::{env, fs::File as StdFile, io::BufReader, ops::Range};
+use std::{env, ops::Range};
 use tlsn_core::proof::TlsProof;
-use tokio::{fs::File, io::AsyncWriteExt as _};
+use tokio::io::AsyncWriteExt as _;
 use tokio_util::compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt};
 use tracing::debug;
 
 use tlsn_prover::tls::{Prover, ProverConfig};
 
-use crate::{format, setup_notary_connection};
+use crate::setup_notary_connection;
 
 // Setting of the application server
 const SERVER_DOMAIN: &str = "api.github.com";
@@ -69,7 +68,6 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     // Load secret variables frome environment for twitter server connection
     dotenv::dotenv().ok();
     let bearer_token = env::var("GITHUB_BEARER_TOKEN").unwrap();
-    let user_agent = env::var("USER_AGENT").unwrap();
 
     let (notary_tls_socket, session_id) =
         setup_notary_connection(NOTARY_HOST, NOTARY_PORT, Some(NOTARY_MAX_TRANSCRIPT_SIZE)).await;
@@ -263,10 +261,4 @@ fn find_ranges(seq: &[u8], sub_seq: &[&[u8]]) -> (Vec<Range<usize>>, Vec<Range<u
     }
 
     (public_ranges, private_ranges)
-}
-
-/// Read a PEM-formatted file and return its buffer reader
-async fn read_pem_file(file_path: &str) -> Result<BufReader<StdFile>> {
-    let key_file = File::open(file_path).await?.into_std().await;
-    Ok(BufReader::new(key_file))
 }

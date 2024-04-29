@@ -13,8 +13,6 @@ use tlsn_prover::tls::{Prover, ProverConfig};
 
 use crate::setup_notary_connection;
 
-use crate::format;
-
 // Setting of the notary server
 const NOTARY_HOST: &str = "127.0.0.1";
 const NOTARY_PORT: u16 = 7047;
