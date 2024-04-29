@@ -1,16 +1,9 @@
 import fs from 'fs';
 import {
-  Field,
-  SmartContract,
-  state,
-  State,
-  method,
-  Signature,
   PublicKey,
   PrivateKey,
   Mina,
   AccountUpdate,
-  ZkappPublicInput,
 } from 'o1js';
 import { SessionHeader } from '../src/SessionHeader';
 import { TlsnVerifier } from '../src/TlsnVerifier';
@@ -57,8 +50,8 @@ describe('TlsnVerifier', () => {
       const deployTxn = await Mina.transaction(deployerAccount, async () => {
         AccountUpdate.fundNewAccount(deployerAccount);
         zkAppInstance.deploy();
-        zkAppInstance.notaryPublicKey.set(notaryPublicKey);
       });
+      await deployTxn.prove();
       await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
     }
 

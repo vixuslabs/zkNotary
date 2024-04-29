@@ -58,7 +58,7 @@ export class SessionHeader extends Struct ({
     const result = RootSchema.safeParse(parsedData);
     if (result.success) {
       const tlsnProof = result.data;
-      const signature = Signature.fromBase58(tlsnProof.session.signature);
+      const signature = Signature.fromBase58(tlsnProof.session.signature.MinaSchnorr.toString());
       const encoder_seed = tlsnProof.session.header.encoder_seed;
       const merkle_root = tlsnProof.session.header.merkle_root;
       const sent_len = numberToBytes(tlsnProof.session.header.sent_len);
