@@ -11,15 +11,15 @@
   "license": "Apache-2.0",
   "author": "",
   "type": "module",
-  "main": "build/src/index.js",
-  "types": "build/src/index.d.ts",
+  "main": "src/index.ts",
   "scripts": {
     "build": "tsup",
     "coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "format": "prettier --write --ignore-unknown **/*",
     "lint": "npx eslint src/* --fix",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
+    "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "clean": "rm -rf .turbo node_modules"
   },
   "dependencies": {
     "o1js": "^0.17.0",

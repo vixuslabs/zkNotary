@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 
 import { Textarea } from "@/components/ui/textarea";
-import { useExamplesStore, NotorizedRawData } from "./examples-store";
+import { useExamplesStore, NotorizedRawData } from "@/stores/examples-store";
 
 const DUMMY_DATA = {
   test1: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",

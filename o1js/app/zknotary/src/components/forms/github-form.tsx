@@ -28,7 +28,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { PopoverContent } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useExamplesStore } from "@/components/examples-store";
+import { useExamplesStore } from "@/stores/examples-store";
 
 const githubFormSchema = z.object({
   username: z.string().min(1, "Username is required"),

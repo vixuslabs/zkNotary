@@ -1,7 +1,7 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
-        "target": "es2020",
+        "target": "es2022",
         "module": "es2022",
         "lib": ["dom", "esnext"],
         "outDir": "./build",
@@ -18,8 +18,7 @@
         "declaration": true,
         "sourceMap": true,
         "noFallthroughCasesInSwitch": true,
-        "allowSyntheticDefaultImports": true,
-        "useDefineForClassFields": false,
+        "allowSyntheticDefaultImports": true
     },
-    "include": ["./src", "tests/TlsnVerifier.test.ts"],
+    "include": ["./src"],
 }

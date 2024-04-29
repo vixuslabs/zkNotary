@@ -105,9 +105,3 @@ export const RootSchemaValues = z.object({
 });
 
 export type RootSchemaValuesType = z.infer<typeof RootSchemaValues>;
-
-export const RootSchema = z.object({
-  proof: RootSchemaValues,
-});
-
-export type RootSchemaSuccessType = z.infer<typeof RootSchema>;

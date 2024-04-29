@@ -12,7 +12,7 @@ export const homeContent: ActiveContent = {
     "The prover generates and signs a proof that the data you requested was indeed retrieved from the chosen API.",
     "A Mina smart contract verifies the signature of the TLS Notary proof and then sends the corresponding Mina proof to the blockchain.",
     "The Mina proof is then used to verify the TLS Notary proof, which in turn verifies the data retrieved from the API.",
-    "The result is displayed on the screen, showing the data retrieved from the API and the verification status of the proof."
+    "The result is displayed on the screen, showing the data retrieved from the API and the verification status of the proof.",
   ],
 };
 

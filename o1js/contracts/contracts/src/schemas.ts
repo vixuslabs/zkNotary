@@ -7,7 +7,7 @@ const DocumentSchema = z.object({
 });
 
 const SignatureSchema = z.object({
-    MinaSchnorr: z.string()
+  MinaSchnorr: z.string(),
 });
 
 const ServerPublicKeySchema = z.object({
@@ -37,6 +37,8 @@ const SessionSchema = z.object({
 export const RootSchema = z.object({
   session: SessionSchema,
 });
+
+export type RootSchemaValuesType = z.infer<typeof RootSchema>;
 
 type Document = z.infer<typeof DocumentSchema>;
 type Root = z.infer<typeof RootSchema>;

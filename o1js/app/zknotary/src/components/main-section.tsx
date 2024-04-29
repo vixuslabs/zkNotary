@@ -4,9 +4,10 @@ import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs";
 import ProofDataContainer from "./proof-data-container";
 
 import { GithubForm, EtherscanForm } from "@/components/forms/";
-import { useExamplesStore } from "./examples-store";
+import { useExamplesStore } from "@/stores/examples-store";
 import { useEffect, useState } from "react";
 import VerifiedDataContainer from "./verified-data-container";
+import VerifyTranscript from "./mina/verify-transcript";
 
 type Tabs = "config" | "formatted" | "raw";
 
@@ -24,7 +25,7 @@ export default function MainSectionContainer() {
 
   return (
     <div className="grid min-h-full md:min-h-[650px] grid-cols-1 lg:grid-cols-2 gap-8 p-4 md:p-8">
-      <div className="bg-gray-100 rounded-lg p-6 dark:bg-gray-800">
+      <div className="bg-secondary rounded-lg p-6">
         <h2 className="text-2xl font-semibold mb-4">{activeContent.title}</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
           {activeContent.description}
@@ -37,14 +38,14 @@ export default function MainSectionContainer() {
           ))}
         </ol>
       </div>
-      <div className="bg-white h-full rounded-lg shadow-lg p-6 dark:bg-gray-700">
+      <div className="h-full rounded-lg shadow-lg p-6">
         <Tabs
           value={currentTab}
           onValueChange={(selected) => setCurrentTab(selected as Tabs)}
           className="w-full"
           defaultValue="config"
         >
-          <TabsList className="grid w-full grid-cols-3 gap-2 mb-4">
+          <TabsList className="grid w-full grid-cols-4 gap-2 mb-4">
             <TabsTrigger disabled={!active || isFetching} value="config">
               Configuration
             </TabsTrigger>
@@ -53,6 +54,9 @@ export default function MainSectionContainer() {
             </TabsTrigger>
             <TabsTrigger disabled={!active || isFetching} value="transcript">
               Transcript
+            </TabsTrigger>
+            <TabsTrigger disabled={!active || isFetching} value="verify">
+              Verify
             </TabsTrigger>
           </TabsList>
           <TabsContent value="config">
@@ -75,6 +79,9 @@ export default function MainSectionContainer() {
             className="min-h-full flex-1 justify-center items-center align-middle"
           >
             <VerifiedDataContainer />
+          </TabsContent>
+          <TabsContent value="verify">
+            <VerifyTranscript />
           </TabsContent>
         </Tabs>
       </div>

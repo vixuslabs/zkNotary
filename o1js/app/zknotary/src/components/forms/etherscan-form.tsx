@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
-import { useExamplesStore } from "../examples-store";
+import { useExamplesStore } from "@/stores/examples-store";
 
 const etherscanFormSchema = z.object({
   contractAddress: z

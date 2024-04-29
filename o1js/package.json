@@ -9,7 +9,8 @@
     "clean:workspaces": "turbo clean",
     "typecheck": "turbo typecheck",
     "lint": "turbo lint",
-    "postinstall": "manypkg check"
+    "postinstall": "manypkg check",
+    "clean:workspaces": "turbo clean"
   },
   "engines": {
     "pnpm": "8.15.*",

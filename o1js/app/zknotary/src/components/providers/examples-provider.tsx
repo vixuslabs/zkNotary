@@ -3,7 +3,7 @@
 import { type ReactNode, createContext, useRef, useContext } from "react";
 import { type StoreApi, useStore } from "zustand";
 
-import { ExamplesStore } from "../examples-store";
+import { ExamplesStore, createExamplesStore } from "@/stores/examples-store";
 
 export const ExamplesContext = createContext<StoreApi<ExamplesStore> | null>(
   null
@@ -11,6 +11,11 @@ export const ExamplesContext = createContext<StoreApi<ExamplesStore> | null>(
 
 export function ExamplesProvider({ children }: { children: ReactNode }) {
   const storeRef = useRef<StoreApi<ExamplesStore> | null>(null);
+
+  if (!storeRef.current) {
+    storeRef.current = createExamplesStore();
+  }
+
   return (
     <ExamplesContext.Provider value={storeRef.current}>
       {children}
