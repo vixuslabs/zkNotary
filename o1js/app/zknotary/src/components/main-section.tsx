@@ -1,20 +1,12 @@
 "use client";
 
-/**
- * v0 by Vercel. Adding back in - Shout out Vercel team, y'all are great.
- * @see https://v0.dev/t/HrbGflUm9ZS
- * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
- */
-
 import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import RawDataContainer from "./raw-data-container";
+import ProofDataContainer from "./proof-data-container";
 
 import { GithubForm, EtherscanForm } from "@/components/forms/";
 import { useExamplesStore } from "./examples-store";
 import { useEffect, useState } from "react";
+import VerifiedDataContainer from "./verified-data-container";
 
 type Tabs = "config" | "formatted" | "raw";
 
@@ -56,11 +48,11 @@ export default function MainSectionContainer() {
             <TabsTrigger disabled={!active || isFetching} value="config">
               Configuration
             </TabsTrigger>
-            <TabsTrigger disabled={!active || isFetching} value="formatted">
-              Formatted Data
+            <TabsTrigger disabled={!active || isFetching} value="proof">
+              Proof
             </TabsTrigger>
-            <TabsTrigger disabled={!active || isFetching} value="raw">
-              Raw Data
+            <TabsTrigger disabled={!active || isFetching} value="transcript">
+              Transcript
             </TabsTrigger>
           </TabsList>
           <TabsContent value="config">
@@ -73,16 +65,16 @@ export default function MainSectionContainer() {
             )}
           </TabsContent>
           <TabsContent
-            value="formatted"
+            value="proof"
             className="min-h-full flex-1 justify-center items-center align-middle"
           >
-            <RawDataContainer />
+            <ProofDataContainer />
           </TabsContent>
           <TabsContent
-            value="raw"
+            value="transcript"
             className="min-h-full flex-1 justify-center items-center align-middle"
           >
-            <RawDataContainer />
+            <VerifiedDataContainer />
           </TabsContent>
         </Tabs>
       </div>

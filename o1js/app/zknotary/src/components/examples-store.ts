@@ -1,15 +1,20 @@
 import { create } from "zustand";
 
 import { githubContent, etherscanContent, homeContent } from "@/lib/constants";
-import { RootSchemaSuccessType } from "@/lib/proof_types";
+import { RootSchemaValuesType } from "@/lib/proof_types";
 
 export type ExampleNames = "github" | "etherscan";
 
-export type NotorizedRawData = RootSchemaSuccessType;
+export type NotorizedRawData = RootSchemaValuesType;
 
-export type AllNotorizedData = {
+export type AllProofData = {
   github: NotorizedRawData | null;
   etherscan: NotorizedRawData | null;
+};
+
+export type AllVerifiedData = {
+  github: string | null;
+  etherscan: string | null;
 };
 
 export type ExamplesState = {
@@ -17,7 +22,8 @@ export type ExamplesState = {
   active: ExampleNames | null;
   activeContent: ActiveContent;
   isFetching: boolean;
-  notorizedData: AllNotorizedData;
+  proofData: AllProofData;
+  verifiedData: AllVerifiedData;
 };
 
 export type ActiveContent = {
@@ -29,7 +35,8 @@ export type ActiveContent = {
 export type ExamplesAction = {
   setActive: (example: ExampleNames | null) => void;
   setFetching: (isFetching: boolean) => void;
-  setNotorizedData: (data: NotorizedRawData, example: ExampleNames) => void;
+  setProofData: (data: NotorizedRawData, example: ExampleNames) => void;
+  setVerifiedData: (data: string, example: ExampleNames) => void;
 };
 
 export type ExamplesStore = ExamplesState & ExamplesAction;
@@ -39,7 +46,11 @@ export const defaultExamplesState: ExamplesState = {
   active: null,
   activeContent: homeContent,
   isFetching: false,
-  notorizedData: {
+  proofData: {
+    github: null,
+    etherscan: null,
+  },
+  verifiedData: {
     github: null,
     etherscan: null,
   },
@@ -50,7 +61,11 @@ export const useExamplesStore = create<ExamplesStore>()((set) => ({
   active: null,
   activeContent: homeContent,
   isFetching: false,
-  notorizedData: {
+  proofData: {
+    github: null,
+    etherscan: null,
+  },
+  verifiedData: {
     github: null,
     etherscan: null,
   },
@@ -66,7 +81,7 @@ export const useExamplesStore = create<ExamplesStore>()((set) => ({
           : homeContent,
     });
   },
-  setNotorizedData: (data: NotorizedRawData, example: ExampleNames) => {
+  setProofData: (data: NotorizedRawData, example: ExampleNames) => {
     console.log("--- Inside setNotorizedData ---");
     console.log("data: ", data);
     console.log("example: ", example);
@@ -74,22 +89,35 @@ export const useExamplesStore = create<ExamplesStore>()((set) => ({
     set((state) => {
       return {
         ...state,
-        notorizedData: { ...state.notorizedData, [example]: data },
+        proofData: { ...state.proofData, [example]: data },
       };
     });
+  },
+  setVerifiedData: (data: string, example: ExampleNames) => {
+    console.log("--- Inside setVerifiedData ---");
+    console.log("data: ", data);
+    console.log("example: ", example);
+    set((state) => ({
+      verifiedData: { ...state.verifiedData, [example]: data },
+    }));
   },
 }));
 
 export const createExamplesStore = (
   initState: ExamplesState = defaultExamplesState
 ) => {
-  return create<ExamplesStore>()((set) => ({
-    ...initState,
-    setFetching: (isFetching: boolean) => set({ isFetching }),
-    setActive: (example: ExampleNames | null) => set({ active: example }),
-    setNotorizedData: (data: NotorizedRawData, example: ExampleNames) =>
-      set((state) => ({
-        notorizedData: { ...state.notorizedData, [example]: data },
-      })),
-  }));
+  return useExamplesStore;
+  // return create<ExamplesStore>()((set) => ({
+  //   ...initState,
+  //   setFetching: (isFetching: boolean) => set({ isFetching }),
+  //   setActive: (example: ExampleNames | null) => set({ active: example }),
+  //   setNotorizedData: (data: NotorizedRawData, example: ExampleNames) =>
+  //     set((state) => ({
+  //       proofData: { ...state.proofData, [example]: data },
+  //     })),
+  //   setVerifiedData: (data: string, example: ExampleNames) =>
+  //     set((state) => ({
+  //       verifiedData: { ...state.verifiedData, [example]: data },
+  //     })),
+  // }));
 };

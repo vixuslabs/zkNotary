@@ -7,10 +7,18 @@ const nextConfig = {
       loader: "webpack-glsl-loader",
     });
 
-    config.experiments = { ...config.experiments, topLevelAwait: true };
+    config.experiments = {
+      ...config.experiments,
+      topLevelAwait: true,
+      // asyncWebAssembly: true,
+      syncWebAssembly: true,
+      // layers: true,
+    };
 
     return config;
   },
+
+  transpilePackages: ["@zknotary/contracts", "zknotary-verifier"],
 
   async headers() {
     return [

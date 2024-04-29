@@ -6,6 +6,8 @@ import { notarize_etherscan } from "@/server/actions/notarize_etherscan";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { NOTARY_PUB_KEY } from "@/lib/constants";
+
 import {
   Form,
   FormItem,
@@ -45,9 +47,12 @@ const etherscanFormSchema = z.object({
 export type EtherscanFormSchema = z.infer<typeof etherscanFormSchema>;
 
 export default function EtherscanForm() {
-  const { setNotorizedData, isFetching, setFetching } = useExamplesStore(
-    (state) => state
-  );
+  const {
+    setVerifiedData,
+    setProofData: setNotorizedData,
+    isFetching,
+    setFetching,
+  } = useExamplesStore((state) => state);
 
   const form = useForm<z.infer<typeof etherscanFormSchema>>({
     resolver: zodResolver(etherscanFormSchema),
@@ -59,6 +64,7 @@ export default function EtherscanForm() {
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof etherscanFormSchema>) => {
+      const verify = (await import("zknotary-verifier")).verify;
       setFetching(true);
 
       toast.promise(() => notarize_etherscan(values), {
@@ -67,6 +73,13 @@ export default function EtherscanForm() {
         success: ({ data }) => {
           setFetching(false);
           setNotorizedData(data, "etherscan");
+
+          let json_data = JSON.stringify(data);
+
+          let verifiedData = verify(json_data, NOTARY_PUB_KEY);
+
+          setVerifiedData(verifiedData, "etherscan");
+
           return "Data Notarized Successfully! Check formatted and Raw Data Tabs for more info.";
         },
         error: (error) => {

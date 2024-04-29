@@ -104,6 +104,8 @@ export const RootSchemaValues = z.object({
   substrings: SubstringsSchema,
 });
 
+export type RootSchemaValuesType = z.infer<typeof RootSchemaValues>;
+
 export const RootSchema = z.object({
   proof: RootSchemaValues,
 });

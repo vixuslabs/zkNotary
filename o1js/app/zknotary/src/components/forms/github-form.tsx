@@ -17,16 +17,18 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 
+import { NOTARY_PUB_KEY } from "@/lib/constants";
+
 import { Button } from "@/components/ui/button";
 
 import { notarize_github } from "@/server/actions/notarize_github";
 
 import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
-import { Calendar } from "../ui/calendar";
-import { PopoverContent } from "../ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { PopoverContent } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useExamplesStore } from "../examples-store";
+import { useExamplesStore } from "@/components/examples-store";
 
 const githubFormSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -42,9 +44,8 @@ const githubFormSchema = z.object({
 export type NotaryGithubArgs = z.infer<typeof githubFormSchema>;
 
 export default function GithubNotarizationForm() {
-  const { isFetching, setFetching, setNotorizedData } = useExamplesStore(
-    (state) => state
-  );
+  const { isFetching, setFetching, setProofData, setVerifiedData } =
+    useExamplesStore((state) => state);
   const form = useForm<NotaryGithubArgs>({
     resolver: zodResolver(githubFormSchema),
     defaultValues: {
@@ -56,6 +57,8 @@ export default function GithubNotarizationForm() {
   });
 
   const onSubmit = useCallback(async (values: NotaryGithubArgs) => {
+    const verify = (await import("zknotary-verifier")).verify;
+
     if (values.since > values.until) {
       form.setError("since", {
         type: "manual",
@@ -69,7 +72,15 @@ export default function GithubNotarizationForm() {
         "Notarizing GitHub data. Please stay on this page, it can take up to a minute.",
 
       success: ({ data }) => {
-        setNotorizedData(data, "github");
+        setProofData(data, "github");
+
+        const strData = JSON.stringify(data);
+
+        const verifiedData = verify(strData, NOTARY_PUB_KEY);
+
+        console.log("verifiedData", verifiedData);
+
+        setVerifiedData(verifiedData, "github");
 
         setFetching(false);
 
@@ -77,6 +88,7 @@ export default function GithubNotarizationForm() {
       },
       error: (error) => {
         setFetching(false);
+        console.warn("error", error);
         return "Error: " + error.message;
       },
     });

@@ -1,5 +1,8 @@
 import { ActiveContent } from "@/components/examples-store";
 
+export const NOTARY_PUB_KEY =
+  "B62qowWuY2PsBZsm64j4Uu2AB3y4L6BbHSvtJcSLcsVRXdiuycbi8Ws";
+
 export const homeContent: ActiveContent = {
   title: "Welcome to zkNotary!",
   description:

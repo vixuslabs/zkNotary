@@ -27,24 +27,19 @@ const DUMMY_DATA = {
 
 const stringifiedDummyData = JSON.stringify(DUMMY_DATA, null, 2);
 
-export default function RawDataContainer() {
-  const { verifiedData: notorizedData, active } = useExamplesStore(
-    (state) => state
-  );
+export default function ProofDataContainer() {
+  const { proofData, active } = useExamplesStore((state) => state);
   // const [jsonData, setJsonData] = useState<NotarizedRawData | null>();
   const [jsonData, setJsonData] = useState<string>(stringifiedDummyData);
 
   useEffect(() => {
-    console.log(notorizedData);
-    console.log(active);
-
     switch (active) {
       case "etherscan":
-        let etherscanJson = JSON.stringify(notorizedData.etherscan, null, 2);
+        let etherscanJson = JSON.stringify(proofData.etherscan, null, 2);
         setJsonData(etherscanJson);
         break;
       case "github":
-        let json = JSON.stringify(notorizedData.github, null, 2);
+        let json = JSON.stringify(proofData.github, null, 2);
         setJsonData(json);
         break;
       default:
@@ -57,7 +52,7 @@ export default function RawDataContainer() {
     // if (active === "github") setJsonData(notorizedData.github);
     //
     // setJsonData(JSON.stringify(DUMMY_DATA, null, 2) as string);
-  }, [notorizedData, active]);
+  }, [proofData, active]);
 
   return (
     <Textarea
