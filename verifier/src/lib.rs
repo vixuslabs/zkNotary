@@ -1,8 +1,10 @@
-use elliptic_curve::pkcs8::DecodePublicKey;
-use p256::PublicKey;
-use pem::parse;
+// use elliptic_curve::pkcs8::DecodePublicKey;
+use mina_signer::PubKey as MinaPubKey;
+// use p256::PublicKey;
+// use pem::parse;
 use std::time::Duration;
 use tlsn_core::proof::{SessionProof, TlsProof};
+use tlsn_core::NotaryPublicKey;
 use wasm_bindgen::prelude::*;
 
 /// A simple verifier which reads a proof and returns the verified session transcript.
@@ -78,9 +80,13 @@ pub fn verify(proof_json: &str, notary_pubkey: &str) -> Result<String, JsValue> 
 }
 
 /// Returns a Notary pubkey trusted by this Verifier
-fn notary_pubkey_from_str(pem_str: &str) -> Result<PublicKey, Box<dyn std::error::Error>> {
-    let pem = parse(pem_str)?;
-    let public_key = PublicKey::from_public_key_der(&pem.contents)?;
+fn notary_pubkey_from_str(pem_str: &str) -> Result<NotaryPublicKey, Box<dyn std::error::Error>> {
+    let public_key = MinaPubKey::from_address(pem_str)?;
 
-    Ok(public_key)
+    let notary_pub_key = NotaryPublicKey::from(public_key);
+    // let test = PublicKey::from
+    // let pem = parse(pem_str)?;
+    // let public_key = PublicKey::from_public_key_der(&pem.contents)?;
+
+    Ok(notary_pub_key)
 }
