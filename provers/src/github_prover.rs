@@ -63,8 +63,6 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     let since = &query_params.since;
     let until = &query_params.until;
 
-    tracing_subscriber::fmt::init();
-
     // Load secret variables frome environment for twitter server connection
     dotenv::dotenv().ok();
     let bearer_token = env::var("GITHUB_BEARER_TOKEN").unwrap();

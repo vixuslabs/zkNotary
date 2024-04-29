@@ -22,6 +22,7 @@ use std::fmt;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    tracing_subscriber::fmt::init();
     HttpServer::new(|| {
         App::new()
             .route("/notarize_simple", web::get().to(simple_prover::notarize))
