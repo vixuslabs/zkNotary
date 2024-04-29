@@ -60,8 +60,6 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     let tweet_url = &query_params.tweet_url;
     let tweet_id = extract_tweet_id(tweet_url);
 
-    tracing_subscriber::fmt::init();
-
     // Load secret variables frome environment for twitter server connection
     dotenv::dotenv().ok();
     let bearer_token = env::var("TWITTER_BEARER_TOKEN").unwrap();

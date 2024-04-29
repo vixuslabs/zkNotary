@@ -56,8 +56,6 @@ pub struct EtherscanQueryParams {
 }
 
 pub async fn notarize(query_params: web::Query<EtherscanQueryParams>) -> impl Responder {
-    tracing_subscriber::fmt::init();
-
     let contract_address = &query_params.contract_address;
     let address = &query_params.address;
 

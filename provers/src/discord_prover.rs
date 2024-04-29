@@ -49,8 +49,6 @@ pub enum ClientType {
 }
 
 pub async fn notarize() -> impl Responder {
-    tracing_subscriber::fmt::init();
-
     // Load secret variables frome environment for discord server connection
     dotenv::dotenv().ok();
     let channel_id = env::var("CHANNEL_ID").unwrap();

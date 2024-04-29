@@ -19,7 +19,6 @@ const NOTARY_PORT: u16 = 8080;
 
 pub async fn notarize() -> impl Responder {
     // Initialize logging
-    tracing_subscriber::fmt::init();
 
     // A Prover configuration
     let config = ProverConfig::builder()
