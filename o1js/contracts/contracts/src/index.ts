@@ -1,3 +1,4 @@
 import { TlsnVerifier } from './TlsnVerifier';
+import { SessionHeader } from './SessionHeader';
 
-export { TlsnVerifier };
+export { TlsnVerifier, SessionHeader };
