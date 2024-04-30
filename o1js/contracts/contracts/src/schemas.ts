@@ -6,29 +6,33 @@ const DocumentSchema = z.object({
   document_content: z.string(),
 });
 
-const OpeningSchema = z.array(
+export const OpeningASchema = z.object({
+  kind: z.literal('Blake3'),
+  ranges: z.array(
+    z.object({
+      start: z.number(),
+      end: z.number(),
+    })
+  ),
+  direction: z.enum(['Sent', 'Received']),
+})
+
+export const OpeningBSchema = z.object({
+  Blake3: z.object({
+    data: z.array(z.number()),
+    nonce: z.array(z.number()),
+  }),
+})
+
+export const OpeningSchema = z.array(
   z.union([
-    z.object({
-      kind: z.literal('Blake3'),
-      ranges: z.array(
-        z.object({
-          start: z.number(),
-          end: z.number(),
-        })
-      ),
-      direction: z.enum(['Sent', 'Received']),
-    }),
-    z.object({
-      Blake3: z.object({
-        data: z.array(z.number()),
-        nonce: z.array(z.number()),
-      }),
-    }),
+    OpeningASchema,
+    OpeningBSchema
   ])
 );
 
-const InclusionProofSchema = z.object({
-  proof: z.array(z.unknown()),
+export const InclusionProofSchema = z.object({
+  proof: z.array(z.number()),
   total_leaves: z.number(),
 });
 
