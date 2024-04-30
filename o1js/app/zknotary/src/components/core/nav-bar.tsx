@@ -1,26 +1,11 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-
-// import {
-//   NavigationMenu,
-//   NavigationMenuItem,
-//   NavigationMenuLink,
-//   NavigationMenuList,
-//   navigationMenuTriggerStyle,
-//   NavigationMenuContent,
-//   NavigationMenuTrigger,
-// } from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
-import { usePathname, useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
-import { useExamplesStore } from "../examples-store";
+import { ExampleNames, useExamplesStore } from "@/stores/examples-store";
+import { MotionConfig, motion } from "framer-motion";
 import { Button } from "../ui/button";
 
-import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
-
-import { ArrowDownIcon, ChevronDownIcon } from "@radix-ui/react-icons";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 
 import {
   DropdownMenu,
@@ -28,24 +13,9 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
-// type ExamplesMenuContext = {
-//   title: string;
-//   description: string;
-// };
-
-// const examples: ExamplesMenuContext[] = [
-//   {
-//     title: "GitHub",
-//     description:
-//       "A demo where you can verify the history of a user's repositories",
-//   },
-//   {
-//     title: "Discord",
-//     description:
-//       "A demo where you can verify the history of a user's conversation history",
-//   },
-// ];
+const navBarExamples = ["Home", "Github", "Etherscan"];
 
 export function NavBar() {
   const {
@@ -54,95 +24,72 @@ export function NavBar() {
     examples: storeExamples,
   } = useExamplesStore((state) => state);
 
-  console.log("active", active);
+  const [activeItem, setActiveItem] = React.useState<string>("Home");
 
   return (
-    <div className="flex gap-x-4 w-full items-center justify-center">
-      <Button variant="ghost" onClick={() => setActive(null)}>
-        Home
-      </Button>
+    <div className="flex gap-x-4 items-center justify-center">
+      <MotionConfig transition={{ type: "spring", bounce: 0, duration: 0.4 }}>
+        <motion.ul
+          onMouseLeave={() => {
+            console.log("leaving ul");
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost">
-            Examples <ChevronDownIcon className="ml-1" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          {storeExamples.map((example) => (
-            <DropdownMenuCheckboxItem
-              key={example}
-              checked={active === example}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  setActive(example);
+            switch (active) {
+              case null:
+                setActiveItem("Home");
+                break;
+              case "github":
+                setActiveItem("Github");
+                break;
+              case "etherscan":
+                setActiveItem("Etherscan");
+                break;
+              default:
+                break;
+            }
+
+            // setActiveItem(active);
+          }}
+          layout
+          className="mx-auto flex w-fit gap-2 justify-center"
+        >
+          {navBarExamples.map((item) => (
+            <motion.li
+              layout
+              className={cn(
+                "relative cursor-pointer px-3 py-2 text-sm outline-none transition-colors",
+                activeItem === item ? "text-gray-800" : "text-gray-700"
+              )}
+              tabIndex={0}
+              key={item}
+              onFocus={() => setActiveItem(item)}
+              onMouseOver={() => setActiveItem(item)}
+              onClick={() => {
+                switch (item) {
+                  case "Home":
+                    setActive(null);
+                    break;
+                  case "Github":
+                    setActive("github");
+                    break;
+                  case "Etherscan":
+                    setActive("etherscan");
+                    break;
+                  default:
+                    break;
                 }
               }}
             >
-              {example.charAt(0).toUpperCase() + example.slice(1)}
-            </DropdownMenuCheckboxItem>
+              {activeItem === item ? (
+                <motion.div
+                  layoutId="tab-indicator"
+                  className="absolute inset-0 rounded-lg bg-black/5"
+                />
+              ) : null}
+              <span className="relative text-inherit">{item}</span>
+            </motion.li>
           ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </motion.ul>
+      </MotionConfig>
     </div>
   );
 }
-
-// <NavigationMenuItem>
-//   <NavigationMenuTrigger>Examples</NavigationMenuTrigger>
-//   <NavigationMenuContent>
-//     <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-//       {examples.map((example) => (
-//         <ListItem
-//           createQueryString={createQueryString}
-//           key={example.title}
-//           title={example.title}
-//         >
-//           {example.description}
-//         </ListItem>
-//       ))}
-//     </ul>
-//   </NavigationMenuContent>
-// </NavigationMenuItem>
-
-// interface ListItemProps extends React.ComponentPropsWithoutRef<"button"> {
-//   example: string;
-//   createQueryString: (name: string, value: string) => string;
-// }
-
-// Wanted to see how it would work with searchParams, simply not needed
-// const ListItem = React.forwardRef<React.ElementRef<"button">, ListItemProps>(
-//   (
-//     { createQueryString, className, title, children, example, ...props },
-//     ref
-//   ) => {
-//     const pathname = usePathname();
-//     const router = useRouter();
-//
-//     return (
-//       <li>
-//         <NavigationMenuLink asChild>
-//           <button
-//             ref={ref}
-//             className={cn(
-//               "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-//               className
-//             )}
-//             onClick={() => {
-//               router.push(
-//                 pathname + "?" + createQueryString("example", example)
-//               );
-//             }}
-//             {...props}
-//           >
-//             <div className="text-sm font-medium leading-none">{title}</div>
-//             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-//               {children}
-//             </p>
-//           </button>
-//         </NavigationMenuLink>
-//       </li>
-//     );
-//   }
-// );
-// ListItem.displayName = "ListItem";

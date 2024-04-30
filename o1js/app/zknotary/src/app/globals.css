@@ -2,69 +2,149 @@
   @tailwind components;
   @tailwind utilities;
 
-  @layer base {
-    :root {
-      --background: 0 0% 100%;
-      --foreground: 20 14.3% 4.1%;
+.wrapper {
+  height: var(--spinner-size, 20px);
+  width: var(--spinner-size, 20px);
+}
 
-      --card: 0 0% 100%;
-      --card-foreground: 20 14.3% 4.1%;
 
-      --popover: 0 0% 100%;
-      --popover-foreground: 20 14.3% 4.1%;
+/* Loading Spinner */
+.spinner {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  height: var(--spinner-size, 20px);
+  width: var(--spinner-size, 20px);
+}
 
-      --primary: 24 9.8% 10%;
-      --primary-foreground: 60 9.1% 97.8%;
+.bar {
+  animation: spin 1.2s linear infinite;
+  background: var(--spinner-color);
+  border-radius: 6px;
+  height: 8%;
+  left: -10%;
+  position: absolute;
+  top: -3.9%;
+  width: 24%;
+}
 
-      --secondary: 60 4.8% 95.9%;
-      --secondary-foreground: 24 9.8% 10%;
+.bar:nth-child(1) {
+  animation-delay: -1.2s;
+  transform: rotate(0.0001deg) translate(146%);
+}
 
-      --muted: 60 4.8% 95.9%;
-      --muted-foreground: 25 5.3% 44.7%;
+.bar:nth-child(2) {
+  animation-delay: -1.1s;
+  transform: rotate(30deg) translate(146%);
+}
 
-      --accent: 60 4.8% 95.9%;
-      --accent-foreground: 24 9.8% 10%;
+.bar:nth-child(3) {
+  animation-delay: -1s;
+  transform: rotate(60deg) translate(146%);
+}
 
-      --destructive: 0 84.2% 60.2%;
-      --destructive-foreground: 60 9.1% 97.8%;
+.bar:nth-child(4) {
+  animation-delay: -0.9s;
+  transform: rotate(90deg) translate(146%);
+}
 
-      --border: 20 5.9% 90%;
-      --input: 20 5.9% 90%;
-      --ring: 20 14.3% 4.1%;
+.bar:nth-child(5) {
+  animation-delay: -0.8s;
+  transform: rotate(120deg) translate(146%);
+}
 
-      --radius: 0.5rem;
-    }
+.bar:nth-child(6) {
+  animation-delay: -0.7s;
+  transform: rotate(150deg) translate(146%);
+}
 
-    .dark {
-      --background: 20 14.3% 4.1%;
-      --foreground: 60 9.1% 97.8%;
+.bar:nth-child(7) {
+  animation-delay: -0.6s;
+  transform: rotate(180deg) translate(146%);
+}
 
-      --card: 20 14.3% 4.1%;
-      --card-foreground: 60 9.1% 97.8%;
+.bar:nth-child(8) {
+  animation-delay: -0.5s;
+  transform: rotate(210deg) translate(146%);
+}
 
-      --popover: 20 14.3% 4.1%;
-      --popover-foreground: 60 9.1% 97.8%;
+.bar:nth-child(9) {
+  animation-delay: -0.4s;
+  transform: rotate(240deg) translate(146%);
+}
 
-      --primary: 60 9.1% 97.8%;
-      --primary-foreground: 24 9.8% 10%;
+.bar:nth-child(10) {
+  animation-delay: -0.3s;
+  transform: rotate(270deg) translate(146%);
+}
 
-      --secondary: 12 6.5% 15.1%;
-      --secondary-foreground: 60 9.1% 97.8%;
+.bar:nth-child(11) {
+  animation-delay: -0.2s;
+  transform: rotate(300deg) translate(146%);
+}
 
-      --muted: 12 6.5% 15.1%;
-      --muted-foreground: 24 5.4% 63.9%;
+.bar:nth-child(12) {
+  animation-delay: -0.1s;
+  transform: rotate(330deg) translate(146%);
+}
 
-      --accent: 12 6.5% 15.1%;
-      --accent-foreground: 60 9.1% 97.8%;
-
-      --destructive: 0 62.8% 30.6%;
-      --destructive-foreground: 60 9.1% 97.8%;
-
-      --border: 12 6.5% 15.1%;
-      --input: 12 6.5% 15.1%;
-      --ring: 24 5.7% 82.9%;
-    }
+@keyframes spin {
+  0% {
+    opacity: 1;
   }
+  100% {
+    opacity: 0.15;
+  }
+}
+
+
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
 
   @layer base {
     * {

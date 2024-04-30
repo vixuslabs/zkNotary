@@ -1,12 +1,11 @@
 use actix_web::{web, HttpResponse, Responder};
-use eyre::Result;
-use http_body_util::{BodyExt as _, Empty};
+use http_body_util::Empty;
 use hyper::{body::Bytes, Request, StatusCode};
 use hyper_util::rt::TokioIo;
 use serde::{Deserialize, Serialize};
-use std::{env, fs::File as StdFile, io::BufReader, ops::Range};
+use std::{env, ops::Range};
 use tlsn_core::proof::TlsProof;
-use tokio::{fs::File, io::AsyncWriteExt as _};
+use tokio::io::AsyncWriteExt as _;
 use tokio_util::compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt};
 use tracing::debug;
 
@@ -21,7 +20,6 @@ const ROUTE: &str = "repos";
 // Setting of the notary server
 const NOTARY_HOST: &str = "127.0.0.1";
 const NOTARY_PORT: u16 = 7047;
-const NOTARY_CA_CERT_PATH: &str = "./rootCA.crt";
 
 // Configuration of notarization
 const NOTARY_MAX_TRANSCRIPT_SIZE: usize = 16384;
@@ -65,12 +63,9 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     let since = &query_params.since;
     let until = &query_params.until;
 
-    tracing_subscriber::fmt::init();
-
     // Load secret variables frome environment for twitter server connection
     dotenv::dotenv().ok();
     let bearer_token = env::var("GITHUB_BEARER_TOKEN").unwrap();
-    let user_agent = env::var("USER_AGENT").unwrap();
 
     let (notary_tls_socket, session_id) =
         setup_notary_connection(NOTARY_HOST, NOTARY_PORT, Some(NOTARY_MAX_TRANSCRIPT_SIZE)).await;
@@ -208,15 +203,21 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
 
     let substrings_proof = proof_builder.build().unwrap();
 
-    let proof = TlsProof {
+    let true_proof = TlsProof {
         session: session_proof,
         substrings: substrings_proof,
     };
 
-    let res = serde_json::json!({
-      "proof": proof,
-      "notarized_session": notarized_session
-    });
+    let json_proof = serde_json::json!(true_proof);
+
+    // let readable_proof = format(json_proof).unwrap();
+
+    let res = serde_json::json!(json_proof);
+
+    // let res = serde_json::json!({
+    //   "proof": true_proof,
+    //   "readable_proof": readable_proof
+    // });
 
     println!("Closing the connection to the Github server");
     let mut client_socket = connection_task.await.unwrap().unwrap().io.into_inner();
@@ -258,10 +259,4 @@ fn find_ranges(seq: &[u8], sub_seq: &[&[u8]]) -> (Vec<Range<usize>>, Vec<Range<u
     }
 
     (public_ranges, private_ranges)
-}
-
-/// Read a PEM-formatted file and return its buffer reader
-async fn read_pem_file(file_path: &str) -> Result<BufReader<StdFile>> {
-    let key_file = File::open(file_path).await?.into_std().await;
-    Ok(BufReader::new(key_file))
 }

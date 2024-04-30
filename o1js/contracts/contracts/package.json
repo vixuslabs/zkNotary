@@ -12,17 +12,19 @@
   "author": "",
   "type": "module",
   "main": "build/src/index.js",
-  "types": "build/src/index.d.ts",
+  "type": "build/src/index.d.js",
   "scripts": {
-    "build": "tsup",
+    "build": "tsc",
     "coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "format": "prettier --write --ignore-unknown **/*",
     "lint": "npx eslint src/* --fix",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
+    "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "clean": "rm -rf .turbo node_modules"
   },
   "dependencies": {
-    "o1js": "^0.17.0",
+    "o1js": "^0.18.0",
+    "zkapp-cli": "^0.20.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {

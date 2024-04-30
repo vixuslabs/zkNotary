@@ -4,9 +4,9 @@ use http_body_util::{BodyExt as _, Empty};
 use hyper::{body::Bytes, Request, StatusCode};
 use hyper_util::rt::TokioIo;
 use serde::{Deserialize, Serialize};
-use std::{env, error::Error, fs::File as StdFile, io::BufReader, ops::Range};
+use std::{env, error::Error, ops::Range};
 use tlsn_core::proof::TlsProof;
-use tokio::{fs::File, io::AsyncWriteExt as _};
+use tokio::io::AsyncWriteExt as _;
 use tokio_util::compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt};
 use tracing::debug;
 use url::Url;
@@ -22,7 +22,6 @@ const ROUTE: &str = "2/tweets";
 // Setting of the notary server
 const NOTARY_HOST: &str = "127.0.0.1";
 const NOTARY_PORT: u16 = 7047;
-const NOTARY_CA_CERT_PATH: &str = "./src/rootCA.crt";
 
 // Configuration of notarization
 const NOTARY_MAX_TRANSCRIPT_SIZE: usize = 16384;
@@ -60,8 +59,6 @@ pub struct QueryParams {
 pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     let tweet_url = &query_params.tweet_url;
     let tweet_id = extract_tweet_id(tweet_url);
-
-    tracing_subscriber::fmt::init();
 
     // Load secret variables frome environment for twitter server connection
     dotenv::dotenv().ok();
@@ -227,12 +224,6 @@ fn find_ranges(seq: &[u8], sub_seq: &[&[u8]]) -> (Vec<Range<usize>>, Vec<Range<u
     }
 
     (public_ranges, private_ranges)
-}
-
-/// Read a PEM-formatted file and return its buffer reader
-async fn read_pem_file(file_path: &str) -> Result<BufReader<StdFile>> {
-    let key_file = File::open(file_path).await?.into_std().await;
-    Ok(BufReader::new(key_file))
 }
 
 fn extract_tweet_id(tweet_url: &str) -> Result<String, Box<dyn Error>> {

@@ -11,6 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "zknotary-parsers": "^1.0.0",
-    "zknotary-verifier": "^1.0.0"
+    "zknotary-verifier": "^1.0.1"
   }
 }

@@ -4,6 +4,12 @@
     "build": {
       "outputs": [".next/**", "!.next/cache/**"]
     },
-    "type-check": {}
+    "type-check": {},
+    "clean": {
+      "cache": false
+    },
+    "//#clean": {
+      "cache": false
+    }
   }
 }

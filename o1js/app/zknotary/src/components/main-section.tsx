@@ -1,90 +1,176 @@
 "use client";
 
-/**
- * v0 by Vercel. Adding back in - Shout out Vercel team, y'all are great.
- * @see https://v0.dev/t/HrbGflUm9ZS
- * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
- */
-
 import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import RawDataContainer from "./raw-data-container";
+import ProofDataContainer from "./proof-data-container";
+import useMeasure from "react-use-measure";
+
+import { GithubForm, EtherscanForm } from "@/components/forms/";
+import { useExamplesStore } from "@/stores/examples-store";
+import { useEffect, useMemo, useState } from "react";
+import VerifiedDataContainer from "./verified-data-container";
+import VerifyTranscript from "./mina/verify-transcript";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
+
+type Tabs = "config" | "proof" | "transcript" | "verify";
+
+type TabContentDirection = -1 | 1;
+
+enum TabTitles {
+  Config = 1,
+  Proof = 2,
+  Transcript = 3,
+  Verify = 4,
+}
+
+const variants = {
+  initial: (direction: TabContentDirection) => {
+    return { z: `${110 * direction}%`, opacity: 0 };
+  },
+  active: { z: "0%", opacity: 1 },
+  exit: (direction: TabContentDirection) => {
+    return { z: `${-110 * direction}%`, opacity: 0 };
+  },
+};
 
 export default function MainSectionContainer() {
+  const { active, activeContent, isFetching } = useExamplesStore(
+    (state) => state
+  );
+  const [currentTab, setCurrentTab] = useState<TabTitles>(TabTitles.Config);
+  const [direction, setDirection] = useState<TabContentDirection>(1);
+  const [ref, bounds] = useMeasure();
+
+  useEffect(() => {
+    if (!active) {
+      setCurrentTab(TabTitles.Config);
+    }
+  }, [active]);
+
+  // useEffect(() => {
+  //   console.log("currentTab", currentTab);
+  // }, [currentTab]);
+
+  const handleTabChange = (prev: TabTitles, selected: TabTitles) => {
+    if (prev - selected > 0) {
+      setDirection(-1);
+    } else {
+      setDirection(1);
+    }
+
+    console.log("prev", prev, "selected", selected);
+  };
+
+  const content = useMemo(() => {
+    console.log("content- currentTab", currentTab);
+
+    if (currentTab === TabTitles.Config) {
+      return active ? (
+        active === "github" ? (
+          <GithubForm />
+        ) : (
+          <EtherscanForm />
+        )
+      ) : (
+        <></>
+      );
+    } else if (currentTab === TabTitles.Proof) {
+      return <ProofDataContainer />;
+    } else if (currentTab === TabTitles.Transcript) {
+      return <VerifiedDataContainer />;
+    } else if (currentTab === TabTitles.Verify) {
+      return <VerifyTranscript />;
+    }
+  }, [currentTab, active, activeContent]);
+
   return (
     <div className="grid min-h-full md:min-h-[650px] grid-cols-1 lg:grid-cols-2 gap-8 p-4 md:p-8">
-      <div className="bg-gray-100 rounded-lg p-6 dark:bg-gray-800">
-        <h2 className="text-2xl font-semibold mb-4">Welcome to zkNotary</h2>
+      <div className="bg-secondary rounded-lg p-6">
+        <h2 className="text-2xl font-semibold mb-4">{activeContent.title}</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Here is a guide to get you started with the examples{" "}
+          {activeContent.description}
         </p>
         <ol className="list-decimal space-y-2 pl-5">
-          <li>
-            Create an account by clicking the "Sign Up" button in the top right
-            corner.
-          </li>
-          <li>
-            Once you've created your account, you'll be able to access the
-            dashboard and all of our features.
-          </li>
-          <li>
-            To get started, navigate to the "Projects" section and create a new
-            project.
-          </li>
-          <li>
-            From there, you can add team members, set up integrations, and start
-            building your application.
-          </li>
+          {activeContent.instructions.map((instruction, index) => (
+            <li key={index} className="text-gray-600 dark:text-gray-400">
+              {instruction}
+            </li>
+          ))}
         </ol>
       </div>
-      <div className="bg-white h-full rounded-lg shadow-lg p-6 dark:bg-gray-700">
-        <Tabs className="w-full" defaultValue="config">
-          <TabsList className="grid w-full grid-cols-3 gap-2 mb-4">
-            <TabsTrigger value="config">Configuration</TabsTrigger>
-            <TabsTrigger value="input">Input Data</TabsTrigger>
-            <TabsTrigger value="raw">Output Data</TabsTrigger>
-          </TabsList>
-          <TabsContent value="config">
-            <form className="space-y-4">
-              <div>
-                <Label htmlFor="USER_AGENT">User Agent</Label>
-                <Input id="USER_AGENT" placeholder="Enter your user agent" />
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  This identifies the application or client making the request.
-                </p>
+      <div className="h-full rounded-lg shadow-lg p-6">
+        <MotionConfig transition={{ duration: 0.15, type: "tween", bounce: 0 }}>
+          <motion.div animate={{ height: bounds.height }}>
+            <Tabs
+              value={currentTab.toString()}
+              className="w-full"
+              defaultValue="config"
+            >
+              <motion.div layout>
+                <TabsList className="grid w-full grid-cols-4 gap-2 mb-4">
+                  <TabsTrigger
+                    disabled={!active || isFetching}
+                    value={TabTitles.Config.toString()}
+                    onClick={() => {
+                      handleTabChange(currentTab, 1);
+                      setCurrentTab(1 as TabTitles);
+                    }}
+                  >
+                    Config
+                  </TabsTrigger>
+                  <TabsTrigger
+                    disabled={!active || isFetching}
+                    value={TabTitles.Proof.toString()}
+                    onClick={() => {
+                      handleTabChange(currentTab, 2);
+                      setCurrentTab(2 as TabTitles);
+                    }}
+                  >
+                    Proof
+                  </TabsTrigger>
+                  <TabsTrigger
+                    disabled={!active || isFetching}
+                    value={TabTitles.Transcript.toString()}
+                    onClick={() => {
+                      handleTabChange(currentTab, 3);
+                      setCurrentTab(3 as TabTitles);
+                    }}
+                  >
+                    Transcript
+                  </TabsTrigger>
+                  <TabsTrigger
+                    disabled={!active || isFetching}
+                    value={TabTitles.Verify.toString()}
+                    onClick={() => {
+                      handleTabChange(currentTab, 4);
+                      setCurrentTab(4 as TabTitles);
+                    }}
+                  >
+                    Verify
+                  </TabsTrigger>
+                </TabsList>
+              </motion.div>
+
+              <div ref={ref}>
+                <AnimatePresence
+                  initial={false}
+                  custom={direction}
+                  mode="popLayout"
+                >
+                  <motion.div
+                    key={currentTab}
+                    variants={variants}
+                    initial="initial"
+                    animate="active"
+                    exit="exit"
+                    custom={direction}
+                  >
+                    {content}
+                  </motion.div>
+                </AnimatePresence>
               </div>
-              <div>
-                <Label htmlFor="Authorization">Authorization</Label>
-                <Input
-                  id="Authorization"
-                  placeholder="Enter your authorization token"
-                />
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  This is used to authenticate and authorize the request.
-                </p>
-              </div>
-              <div>
-                <Label htmlFor="CHANNEL_ID">Channel ID</Label>
-                <Input id="CHANNEL_ID" placeholder="Enter your channel ID" />
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  This identifies the channel or context for the request.
-                </p>
-              </div>
-              <Button type="submit">Save Changes</Button>
-            </form>
-          </TabsContent>
-          <TabsContent value="input">
-            <RawDataContainer />
-          </TabsContent>
-          <TabsContent
-            value="raw"
-            className="min-h-full flex-1 justify-center items-center align-middle"
-          >
-            <RawDataContainer />
-          </TabsContent>
-        </Tabs>
+            </Tabs>
+          </motion.div>
+        </MotionConfig>
       </div>
     </div>
   );
