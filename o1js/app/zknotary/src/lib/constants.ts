@@ -1,4 +1,4 @@
-import { ActiveContent } from "@/components/examples-store";
+import { ActiveContent } from "@/stores/examples-store";
 
 export const NOTARY_PUB_KEY =
   "B62qowWuY2PsBZsm64j4Uu2AB3y4L6BbHSvtJcSLcsVRXdiuycbi8Ws";

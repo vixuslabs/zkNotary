@@ -1,5 +1,5 @@
 import { Field, Provable, Struct, Signature } from 'o1js';
-import { RootSchema, RootSchemaValuesType } from './schemas';
+import { RootSchema } from './schemas';
 
 // Convert a number to a byte array
 function numberToBytes(num: number) {
@@ -93,4 +93,3 @@ export class SessionHeader extends Struct({
     }
   }
 }
-

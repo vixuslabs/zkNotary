@@ -4,7 +4,7 @@ import * as React from "react";
 import { useExamplesStore } from "@/stores/examples-store";
 import { Button } from "../ui/button";
 
-import { ArrowDownIcon, ChevronDownIcon } from "@radix-ui/react-icons";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 
 import {
   DropdownMenu,

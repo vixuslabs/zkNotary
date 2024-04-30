@@ -1,4 +1,14 @@
 {
   "version": 1,
-  "deployAliases": {}
+  "deployAliases": {
+    "devnet": {
+      "networkId": "testnet",
+      "url": "https://api.minascan.io/node/devnet/v1/graphql",
+      "keyPath": "keys/devnet.json",
+      "feepayerKeyPath": "/Users/tito/.cache/zkapp-cli/keys/auro_dev.json",
+      "feepayerAlias": "auro_dev",
+      "fee": "0.1",
+      "smartContract": "TlsnVerifier"
+    }
+  }
 }

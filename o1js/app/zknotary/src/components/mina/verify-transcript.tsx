@@ -8,12 +8,16 @@ import { useMinaStore } from "@/components/providers/mina-provider";
 import { useExamplesStore } from "@/components/providers/examples-provider";
 
 import { Button } from "@/components/ui/button";
+import { useTlsnVerifier } from "@/mina/tlsn-verifier-provider";
+import { toast } from "sonner";
 
 export default function VerifyTranscript() {
   const { active, proofData, verifiedData } = useExamplesStore(
     (state) => state
   );
+
   const { wallet, setPendingTransaction } = useMinaStore((state) => state);
+  const { sendTransaction, creatingTransaction } = useTlsnVerifier();
 
   const handleVerifyProof = useCallback(async () => {
     let { PublicKey } = await import("o1js");
@@ -45,9 +49,36 @@ export default function VerifyTranscript() {
     // console.log("notaryPubKey", notaryPubKey);
     //
     let validSig = signature.verify(notaryPubKey, sessionHeader.toFields());
-    //
+
+    console.log("validSig", validSig.toBoolean());
+
+    let txProof = JSON.stringify(limitedProof);
+
+    console.log("txProof", txProof);
+
+    let sendSigTx = async () => {
+      return await sendTransaction(txProof);
+    };
+
+    toast.promise(sendSigTx, {
+      loading: "Sending Transaction",
+      success: (tx) => {
+        console.log("tx", tx);
+
+        return `Transaction sent! Find it on minascan: ${tx.transactionLink}`;
+      },
+      error: (err) => {
+        console.error(err);
+        return err.message;
+      },
+    });
+
     console.log("validSig", validSig.toBoolean());
   }, []);
 
-  return <Button onClick={handleVerifyProof}>Verify Transcript</Button>;
+  return (
+    <Button disabled={creatingTransaction} onClick={handleVerifyProof}>
+      Verify Transcript
+    </Button>
+  );
 }
