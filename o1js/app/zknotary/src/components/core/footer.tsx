@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { TwitterIcon, GithubIcon } from "lucide-react";
+import { GithubIcon } from "lucide-react";
 
 import Link from "next/link";
 
@@ -12,14 +12,7 @@ export default function Footer() {
       <div className="flex space-x-4">
         <Link
           className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          href="#"
-        >
-          <TwitterIcon className="h-6 w-6" />
-          <span className="sr-only">Twitter</span>
-        </Link>
-        <Link
-          className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          href="#"
+          href="https://github.com/vixuslabs/zkNotary"
         >
           <GithubIcon className="h-6 w-6" />
           <span className="sr-only">Github</span>

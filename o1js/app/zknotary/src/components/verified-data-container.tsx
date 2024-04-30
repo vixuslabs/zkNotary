@@ -35,14 +35,14 @@ export default function VerifiedDataContainer() {
     switch (active) {
       case "etherscan":
         // let etherscanJson = JSON.stringify(verifiedData.etherscan, null, 2);
-        setJsonData(verifiedData.etherscan);
+        setJsonData(verifiedData.etherscan ?? "");
         break;
       case "github":
         // let json = JSON.stringify(verifiedData.github, null, 2);
-        setJsonData(verifiedData.github);
+        setJsonData(verifiedData.github ?? "");
         break;
       default:
-        setJsonData(DUMMY_DATA);
+        setJsonData("");
         break;
     }
 

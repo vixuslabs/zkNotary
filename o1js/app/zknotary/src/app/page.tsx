@@ -19,7 +19,6 @@ export default function Home() {
             <NavBar />
             <div className="flex items-center gap-2">
               <WalletSection />
-              <ThemeModeToggle />
             </div>
           </header>
 

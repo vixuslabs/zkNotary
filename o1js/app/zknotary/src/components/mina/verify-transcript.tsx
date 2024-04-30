@@ -43,11 +43,7 @@ export default function VerifyTranscript() {
     let [sessionHeader, signature] = SessionHeader.fromJson(proof);
 
     let notaryPubKey = PublicKey.fromBase58(NOTARY_PUB_KEY);
-    //
-    // console.log("sessionHeader", sessionHeader);
-    // console.log("signature", signature);
-    // console.log("notaryPubKey", notaryPubKey);
-    //
+
     let validSig = signature.verify(notaryPubKey, sessionHeader.toFields());
 
     console.log("validSig", validSig.toBoolean());
@@ -65,7 +61,12 @@ export default function VerifyTranscript() {
       success: (tx) => {
         console.log("tx", tx);
 
-        return `Transaction sent! Find it on minascan: ${tx.transactionLink}`;
+        return (
+          <span>
+            `Transaction sent! Find it on minascan{" "}
+            <a href={tx.transactionLink}>${tx.transactionLink} </a>`
+          </span>
+        );
       },
       error: (err) => {
         console.error(err);
@@ -76,9 +77,55 @@ export default function VerifyTranscript() {
     console.log("validSig", validSig.toBoolean());
   }, []);
 
+  const verifyProofLocally = useCallback(async () => {
+    let { PublicKey } = await import("o1js");
+    let { SessionHeader } = await import("@zknotary/contracts");
+
+    if (!proofData) {
+      return;
+    }
+
+    if (active === null) {
+      return;
+    }
+
+    let limitedProof = {
+      session: {
+        header: proofData[active]!.session.header,
+        signature: proofData[active]!.session.signature,
+      },
+    };
+
+    let proof = JSON.stringify(limitedProof);
+
+    let [sessionHeader, signature] = SessionHeader.fromJson(proof);
+
+    let notaryPubKey = PublicKey.fromBase58(NOTARY_PUB_KEY);
+
+    let validSig = signature.verify(notaryPubKey, sessionHeader.toFields());
+
+    const isValid = validSig.toBoolean();
+
+    if (isValid) {
+      toast.success("Proof is valid!");
+    } else {
+      toast.error("Proof is invalid!");
+    }
+  }, []);
+
   return (
-    <Button disabled={creatingTransaction} onClick={handleVerifyProof}>
-      Verify Transcript
-    </Button>
+    <section className="flex flex-col items-center justify-center py-12">
+      <h2 className="text-xl font-bold tracking-tight text-center sm:text-2xl">
+        Now it is time to verify the SessionHeader of our retrieved proof!
+      </h2>
+      <div className="mt-8 flex gap-4">
+        <Button disabled={creatingTransaction} onClick={verifyProofLocally}>
+          Verify Locally
+        </Button>
+        <Button disabled={creatingTransaction} onClick={handleVerifyProof}>
+          Verify on Chain
+        </Button>
+      </div>
+    </section>
   );
 }

@@ -2,26 +2,85 @@
 
 import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs";
 import ProofDataContainer from "./proof-data-container";
+import useMeasure from "react-use-measure";
 
 import { GithubForm, EtherscanForm } from "@/components/forms/";
 import { useExamplesStore } from "@/stores/examples-store";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import VerifiedDataContainer from "./verified-data-container";
 import VerifyTranscript from "./mina/verify-transcript";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 
-type Tabs = "config" | "formatted" | "raw";
+type Tabs = "config" | "proof" | "transcript" | "verify";
+
+type TabContentDirection = -1 | 1;
+
+enum TabTitles {
+  Config = 1,
+  Proof = 2,
+  Transcript = 3,
+  Verify = 4,
+}
+
+const variants = {
+  initial: (direction: TabContentDirection) => {
+    return { z: `${110 * direction}%`, opacity: 0 };
+  },
+  active: { z: "0%", opacity: 1 },
+  exit: (direction: TabContentDirection) => {
+    return { z: `${-110 * direction}%`, opacity: 0 };
+  },
+};
 
 export default function MainSectionContainer() {
   const { active, activeContent, isFetching } = useExamplesStore(
     (state) => state
   );
-  const [currentTab, setCurrentTab] = useState<Tabs>("config");
+  const [currentTab, setCurrentTab] = useState<TabTitles>(TabTitles.Config);
+  const [direction, setDirection] = useState<TabContentDirection>(1);
+  const [ref, bounds] = useMeasure();
 
   useEffect(() => {
     if (!active) {
-      setCurrentTab("config");
+      setCurrentTab(TabTitles.Config);
     }
   }, [active]);
+
+  // useEffect(() => {
+  //   console.log("currentTab", currentTab);
+  // }, [currentTab]);
+
+  const handleTabChange = (prev: TabTitles, selected: TabTitles) => {
+    if (prev - selected > 0) {
+      setDirection(-1);
+    } else {
+      setDirection(1);
+    }
+
+    console.log("prev", prev, "selected", selected);
+  };
+
+  const content = useMemo(() => {
+    console.log("content- currentTab", currentTab);
+
+    if (currentTab === TabTitles.Config) {
+      return active ? (
+        active === "github" ? (
+          <GithubForm />
+        ) : (
+          <EtherscanForm />
+        )
+      ) : (
+        <></>
+      );
+    } else if (currentTab === TabTitles.Proof) {
+      return <ProofDataContainer />;
+    } else if (currentTab === TabTitles.Transcript) {
+      return <VerifiedDataContainer />;
+    } else if (currentTab === TabTitles.Verify) {
+      return <VerifyTranscript />;
+    }
+  }, [currentTab, active, activeContent]);
 
   return (
     <div className="grid min-h-full md:min-h-[650px] grid-cols-1 lg:grid-cols-2 gap-8 p-4 md:p-8">
@@ -39,51 +98,79 @@ export default function MainSectionContainer() {
         </ol>
       </div>
       <div className="h-full rounded-lg shadow-lg p-6">
-        <Tabs
-          value={currentTab}
-          onValueChange={(selected) => setCurrentTab(selected as Tabs)}
-          className="w-full"
-          defaultValue="config"
-        >
-          <TabsList className="grid w-full grid-cols-4 gap-2 mb-4">
-            <TabsTrigger disabled={!active || isFetching} value="config">
-              Configuration
-            </TabsTrigger>
-            <TabsTrigger disabled={!active || isFetching} value="proof">
-              Proof
-            </TabsTrigger>
-            <TabsTrigger disabled={!active || isFetching} value="transcript">
-              Transcript
-            </TabsTrigger>
-            <TabsTrigger disabled={!active || isFetching} value="verify">
-              Verify
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="config">
-            {active === "etherscan" ? (
-              <EtherscanForm />
-            ) : active === "github" ? (
-              <GithubForm />
-            ) : (
-              <p>This the home content!</p>
-            )}
-          </TabsContent>
-          <TabsContent
-            value="proof"
-            className="min-h-full flex-1 justify-center items-center align-middle"
-          >
-            <ProofDataContainer />
-          </TabsContent>
-          <TabsContent
-            value="transcript"
-            className="min-h-full flex-1 justify-center items-center align-middle"
-          >
-            <VerifiedDataContainer />
-          </TabsContent>
-          <TabsContent value="verify">
-            <VerifyTranscript />
-          </TabsContent>
-        </Tabs>
+        <MotionConfig transition={{ duration: 0.15, type: "tween", bounce: 0 }}>
+          <motion.div animate={{ height: bounds.height }}>
+            <Tabs
+              value={currentTab.toString()}
+              className="w-full"
+              defaultValue="config"
+            >
+              <motion.div layout>
+                <TabsList className="grid w-full grid-cols-4 gap-2 mb-4">
+                  <TabsTrigger
+                    disabled={!active || isFetching}
+                    value={TabTitles.Config.toString()}
+                    onClick={() => {
+                      handleTabChange(currentTab, 1);
+                      setCurrentTab(1 as TabTitles);
+                    }}
+                  >
+                    Config
+                  </TabsTrigger>
+                  <TabsTrigger
+                    disabled={!active || isFetching}
+                    value={TabTitles.Proof.toString()}
+                    onClick={() => {
+                      handleTabChange(currentTab, 2);
+                      setCurrentTab(2 as TabTitles);
+                    }}
+                  >
+                    Proof
+                  </TabsTrigger>
+                  <TabsTrigger
+                    disabled={!active || isFetching}
+                    value={TabTitles.Transcript.toString()}
+                    onClick={() => {
+                      handleTabChange(currentTab, 3);
+                      setCurrentTab(3 as TabTitles);
+                    }}
+                  >
+                    Transcript
+                  </TabsTrigger>
+                  <TabsTrigger
+                    disabled={!active || isFetching}
+                    value={TabTitles.Verify.toString()}
+                    onClick={() => {
+                      handleTabChange(currentTab, 4);
+                      setCurrentTab(4 as TabTitles);
+                    }}
+                  >
+                    Verify
+                  </TabsTrigger>
+                </TabsList>
+              </motion.div>
+
+              <div ref={ref}>
+                <AnimatePresence
+                  initial={false}
+                  custom={direction}
+                  mode="popLayout"
+                >
+                  <motion.div
+                    key={currentTab}
+                    variants={variants}
+                    initial="initial"
+                    animate="active"
+                    exit="exit"
+                    custom={direction}
+                  >
+                    {content}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </Tabs>
+          </motion.div>
+        </MotionConfig>
       </div>
     </div>
   );

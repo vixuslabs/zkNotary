@@ -36,14 +36,14 @@ export default function ProofDataContainer() {
     switch (active) {
       case "etherscan":
         let etherscanJson = JSON.stringify(proofData.etherscan, null, 2);
-        setJsonData(etherscanJson);
+        setJsonData(proofData.etherscan ? etherscanJson : "");
         break;
       case "github":
         let json = JSON.stringify(proofData.github, null, 2);
-        setJsonData(json);
+        setJsonData(proofData.github ? json : "");
         break;
       default:
-        setJsonData(DUMMY_DATA);
+        setJsonData("");
         break;
     }
 

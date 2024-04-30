@@ -13,8 +13,8 @@ export type NotaryGithubArgs = {
   until: Date;
 };
 
-//const NOTARY_SERVER_HOST = process.env.NOTARY_PROVER_HOST!;
-const NOTARY_SERVER_HOST = "127.0.0.1";
+const NOTARY_SERVER_HOST = process.env.NOTARY_PROVER_HOST!;
+// const NOTARY_SERVER_HOST = "127.0.0.1";
 const NOTARY_SERVER_PORT = 8080;
 
 export async function notarize_github(args: NotaryGithubArgs) {

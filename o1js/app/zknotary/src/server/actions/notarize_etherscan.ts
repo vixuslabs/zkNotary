@@ -1,6 +1,6 @@
 "use server";
 
-import { RootSchemaSuccessType, RootSchemaValuesType } from "@/lib/proof_types";
+import { RootSchemaValuesType } from "@/lib/proof_types";
 
 // Etherscan notarization
 
@@ -11,13 +11,8 @@ export type NotaryEtherscanArgs = {
   address: string;
 };
 
-interface ReturnedDevNotarization {
-  proof: RootSchemaSuccessType;
-  readable_proof: string;
-}
-
-//const NOTARY_SERVER_HOST = process.env.NOTARY_PROVER_HOST!;
-const NOTARY_SERVER_HOST = "127.0.0.1";
+const NOTARY_SERVER_HOST = process.env.NOTARY_PROVER_HOST!;
+// const NOTARY_SERVER_HOST = "127.0.0.1";
 const NOTARY_SERVER_PORT = 8080;
 
 export async function notarize_etherscan(args: NotaryEtherscanArgs) {
