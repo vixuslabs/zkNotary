@@ -27,6 +27,3 @@ The next steps in the implementation of the o1js zkNotary verifier are to define
  
 ### Solutions
 - **Signature**: So we went with option 1, and are utilizing the MinaSchnorr signature throughout the [tlsn-server](https://github.com/vixuslabs/tlsn/tree/main/notary-server) and our [provers](https://github.com/vixuslabs/zkNotary/tree/main/provers). By default, tlsn only used secp256r1 for the notary, and their provers/verifiers. What we did was fork the tlsn repo, and adapt it so that both P256 and MinaSchnorr were valid for both the provers and verifiers. 
-
-### Today (April 30, 2024)
-At this 
