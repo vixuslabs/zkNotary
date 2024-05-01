@@ -6,10 +6,12 @@
      },
     "build": {
       "dependsOn": ["^typecheck", "^build"],
+      "env": ["NOTARY_PROVER_HOST"],
       "outputs": [".next/**", "!.next/cache/**", ".output/**", ".vercel/output/**"]
     },
     "start": {
-      "dependsOn": ["^topo"]
+      "dependsOn": ["build"],
+      "outputs": [".next/**", "!.next/cache/**", ".output/**", ".vercel/output/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -28,8 +30,5 @@
     "//#clean": {
       "cache": false
     }
-  },
-  "globalEnv": [
-    "NOTARY_PROVER_HOST"
-  ]
+  }
 }

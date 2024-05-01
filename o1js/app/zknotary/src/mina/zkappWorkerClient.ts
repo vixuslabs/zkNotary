@@ -1,4 +1,6 @@
-import { fetchAccount, PublicKey, Field } from "o1js";
+"use client";
+
+import type { fetchAccount, PublicKey } from "o1js";
 
 import type {
   ZkappWorkerRequest,
@@ -39,6 +41,8 @@ export default class ZkappWorkerClient {
   }
 
   async getNotaryPublicKey(): Promise<PublicKey> {
+    const { PublicKey } = await import("o1js");
+
     const result = await this._call("getNotaryPublicKey", {});
     return PublicKey.fromBase58(result as string);
   }

@@ -8,7 +8,7 @@ import { useMinaStore } from "@/components/providers/mina-provider";
 import { useExamplesStore } from "@/components/providers/examples-provider";
 
 import { Button } from "@/components/ui/button";
-import { useTlsnVerifier } from "@/mina/tlsn-verifier-provider";
+// import { useTlsnVerifier } from "@/mina/tlsn-verifier-provider";
 import { toast } from "sonner";
 
 export default function VerifyTranscript() {
@@ -17,7 +17,7 @@ export default function VerifyTranscript() {
   );
 
   const { wallet, setPendingTransaction } = useMinaStore((state) => state);
-  const { sendTransaction, creatingTransaction } = useTlsnVerifier();
+  // const { sendTransaction, creatingTransaction } = useTlsnVerifier();
 
   const handleVerifyProof = useCallback(async () => {
     let { PublicKey } = await import("o1js");
@@ -42,6 +42,9 @@ export default function VerifyTranscript() {
 
     let [sessionHeader, signature] = SessionHeader.fromJson(proof);
 
+    console.log("sessionHeader", sessionHeader);
+    console.log("signature", signature);
+
     let notaryPubKey = PublicKey.fromBase58(NOTARY_PUB_KEY);
 
     let validSig = signature.verify(notaryPubKey, sessionHeader.toFields());
@@ -52,29 +55,29 @@ export default function VerifyTranscript() {
 
     console.log("txProof", txProof);
 
-    let sendSigTx = async () => {
-      return await sendTransaction(txProof);
-    };
-
-    toast.promise(sendSigTx, {
-      loading: "Sending Transaction",
-      success: (tx) => {
-        console.log("tx", tx);
-
-        return (
-          <span>
-            Transaction sent! Find it on minascan{" "}
-            <a className="inline-block" href={tx.transactionLink}>
-              here
-            </a>
-          </span>
-        );
-      },
-      error: (err) => {
-        console.error(err);
-        return err.message;
-      },
-    });
+    // let sendSigTx = async () => {
+    //   return await sendTransaction(txProof);
+    // };
+    //
+    // toast.promise(sendSigTx, {
+    //   loading: "Sending Transaction",
+    //   success: (tx) => {
+    //     console.log("tx", tx);
+    //
+    //     return (
+    //       <span>
+    //         Transaction sent! Find it on minascan{" "}
+    //         <a className="inline-block" href={tx.transactionLink}>
+    //           here
+    //         </a>
+    //       </span>
+    //     );
+    //   },
+    //   error: (err) => {
+    //     console.error(err);
+    //     return err.message;
+    //   },
+    // });
 
     console.log("validSig", validSig.toBoolean());
   }, []);
@@ -100,7 +103,12 @@ export default function VerifyTranscript() {
 
     let proof = JSON.stringify(limitedProof);
 
+    console.log("proof", proof);
+
     let [sessionHeader, signature] = SessionHeader.fromJson(proof);
+
+    console.log("sessionHeader", sessionHeader);
+    console.log("signature", signature);
 
     let notaryPubKey = PublicKey.fromBase58(NOTARY_PUB_KEY);
 
@@ -113,7 +121,7 @@ export default function VerifyTranscript() {
     } else {
       toast.error("Proof is invalid!");
     }
-  }, []);
+  }, [proofData]);
 
   return (
     <section className="flex flex-col items-center justify-center py-12">
@@ -121,10 +129,10 @@ export default function VerifyTranscript() {
         Now it is time to verify the SessionHeader of our retrieved proof!
       </h2>
       <div className="mt-8 flex gap-4">
-        <Button disabled={creatingTransaction} onClick={verifyProofLocally}>
+        <Button disabled={false} onClick={verifyProofLocally}>
           Verify Locally
         </Button>
-        <Button disabled={creatingTransaction} onClick={handleVerifyProof}>
+        <Button disabled={true} onClick={handleVerifyProof}>
           Verify on Chain
         </Button>
       </div>

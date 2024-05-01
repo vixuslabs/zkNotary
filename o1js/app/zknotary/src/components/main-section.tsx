@@ -61,8 +61,6 @@ export default function MainSectionContainer() {
   };
 
   const content = useMemo(() => {
-    console.log("content- currentTab", currentTab);
-
     if (currentTab === TabTitles.Config) {
       return active ? (
         active === "github" ? (
