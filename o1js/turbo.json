@@ -2,6 +2,14 @@
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
     "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "zknotary#build": {
+      "dependsOn": ["^build"],
+      "env": [
+        "NOTARY_PROVER_HOST"
+      ],
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "type-check": {},
