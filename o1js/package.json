@@ -2,15 +2,17 @@
   "name": "zknotary-verifier--root",
   "private": true,
   "version": "1.0.0",
+  "license": "Apache-2.0",
   "description": "",
   "scripts": {
-    "dev": "turbo dev --filter apps",
+    "dev": "turbo dev",
     "start": "turbo start",
     "clean:workspaces": "turbo clean",
     "typecheck": "turbo typecheck",
     "lint": "turbo lint",
     "postinstall": "manypkg check",
-    "clean:workspaces": "turbo clean"
+    "clean:workspaces": "turbo clean",
+    "build": "turbo build"
   },
   "engines": {
     "pnpm": "8.15.*",

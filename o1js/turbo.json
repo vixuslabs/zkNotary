@@ -12,6 +12,13 @@
       ],
       "outputs": [".next/**", "!.next/cache/**"]
     },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
     "type-check": {},
     "clean": {
       "cache": false
@@ -19,5 +26,8 @@
     "//#clean": {
       "cache": false
     }
-  }
+  },
+  "globalEnv": [
+    "NOTARY_PROVER_HOST"
+  ]
 }
