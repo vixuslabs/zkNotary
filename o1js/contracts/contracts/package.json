@@ -10,9 +10,8 @@
   ],
   "license": "Apache-2.0",
   "author": "",
-  "type": "module",
-  "main": "build/src/index.js",
   "type": "build/src/index.d.js",
+  "main": "build/src/index.js",
   "scripts": {
     "build": "tsc",
     "coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
