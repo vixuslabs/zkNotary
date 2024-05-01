@@ -1,14 +1,14 @@
 "use client";
 
 import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs";
-import ProofDataContainer from "./proof-data-container";
+import ProofDataContainer from "@/components/proof-data-container";
 import useMeasure from "react-use-measure";
 
 import { GithubForm, EtherscanForm } from "@/components/forms/";
 import { useExamplesStore } from "@/stores/examples-store";
 import { useEffect, useMemo, useState } from "react";
-import VerifiedDataContainer from "./verified-data-container";
-import VerifyTranscript from "./mina/verify-transcript";
+import VerifiedDataContainer from "@/components/verified-data-container";
+import VerifyTranscript from "@/components/mina/verify-transcript";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 
 type Tabs = "config" | "proof" | "transcript" | "verify";

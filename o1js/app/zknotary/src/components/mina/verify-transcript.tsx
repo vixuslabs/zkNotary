@@ -63,8 +63,10 @@ export default function VerifyTranscript() {
 
         return (
           <span>
-            `Transaction sent! Find it on minascan{" "}
-            <a href={tx.transactionLink}>${tx.transactionLink} </a>`
+            Transaction sent! Find it on minascan{" "}
+            <a className="inline-block" href={tx.transactionLink}>
+              here
+            </a>
           </span>
         );
       },

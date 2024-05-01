@@ -1,9 +1,15 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
+     "topo": {
+       "dependsOn": ["^topo"]
+     },
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "dependsOn": ["^typecheck", "^build"],
+      "outputs": [".next/**", "!.next/cache/**", ".output/**", ".vercel/output/**"]
+    },
+    "start": {
+      "dependsOn": ["^topo"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -12,7 +18,10 @@
       "cache": false,
       "persistent": true
     },
-    "type-check": {},
+    "typecheck": {
+      "dependsOn": ["^topo"],
+      "outputs": ["node_modules/.cache/tsbuildinfo.json"]
+    },
     "clean": {
       "cache": false
     },

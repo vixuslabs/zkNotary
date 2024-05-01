@@ -1,7 +1,7 @@
 {
   "name": "@zknotary/contracts",
+  "private": true,
   "version": "0.1.0",
-  "description": "",
   "keywords": [
     "mina-zkapp",
     "mina-zk-app",
@@ -9,11 +9,10 @@
     "zkapp"
   ],
   "license": "Apache-2.0",
-  "author": "",
-  "type": "build/src/index.d.js",
-  "main": "build/src/index.js",
+  "type": "module",
+  "main": "src/index.ts",
   "scripts": {
-    "build": "tsc",
+    "build:mina": "tsup",
     "coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "format": "prettier --write --ignore-unknown **/*",
     "lint": "npx eslint src/* --fix",
