@@ -2,17 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   webpack: (config, _) => {
-    config.module.rules.push({
-      test: /\.glsl/,
-      loader: "webpack-glsl-loader",
-    });
-
     config.experiments = {
       ...config.experiments,
       topLevelAwait: true,
-      // asyncWebAssembly: true,
       syncWebAssembly: true,
-      // layers: true,
+      // asyncWebAssembly: true,
     };
 
     return config;
@@ -41,4 +35,14 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+import withBundleAnalyzer from "@next/bundle-analyzer";
+
+const bundleAnalyzer = withBundleAnalyzer();
+
+// module.exports = process.env.ANALYZE
+//   ? withBundleAnalyzer(nextConfig)
+//   : nextConfig;
+
+const toExport = process.env.ANALYZE ? bundleAnalyzer(nextConfig) : nextConfig;
+
+export default toExport;

@@ -17,7 +17,6 @@
     "incremental": true,
     "noUncheckedIndexedAccess": true,
     "experimentalDecorators": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["o1js/app/zknotary/src/*"]
     }
