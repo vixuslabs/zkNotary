@@ -5,10 +5,6 @@ import { type StoreApi, useStore } from "zustand";
 
 import { MinaStore, createMinaStore } from "@/stores/mina-store";
 
-import { TlsnVerifier } from "@zknotary/contracts";
-
-import { SessionHeader } from "@zknotary/contracts/build/src/SessionHeader";
-
 // type VerifierType = "standalone" | "blockchain";
 //
 // export interface MinaProviderProps {
