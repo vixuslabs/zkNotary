@@ -20,6 +20,8 @@ const nextConfig = {
 
   transpilePackages: ["@zknotary/contracts", "zknotary-verifier"],
 
+  swcMinify: false,
+
   async headers() {
     return [
       {

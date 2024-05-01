@@ -1,0 +1,3 @@
+packages:
+  - "o1js/app/*"
+  - "o1js/contracts/*"
