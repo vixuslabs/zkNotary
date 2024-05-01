@@ -9,8 +9,11 @@
       "env": ["NOTARY_PROVER_HOST"],
       "outputs": [".next/**", "!.next/cache/**", ".output/**", ".vercel/output/**"]
     },
+    "build:mina": {
+      "dependsOn": ["^topo"]
+    },
     "start": {
-      "dependsOn": ["build"],
+      "dependsOn": ["^topo"],
       "outputs": [".next/**", "!.next/cache/**", ".output/**", ".vercel/output/**"]
     },
     "lint": {

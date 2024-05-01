@@ -1,28 +1,15 @@
 "use client";
 
-import * as React from "react";
-import { ExampleNames, useExamplesStore } from "@/stores/examples-store";
+import React from "react";
+import { useExamplesStore } from "@/stores/examples-store";
 import { MotionConfig, motion } from "framer-motion";
-import { Button } from "../ui/button";
 
-import { ChevronDownIcon } from "@radix-ui/react-icons";
-
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 const navBarExamples = ["Home", "Github", "Etherscan"];
 
 export function NavBar() {
-  const {
-    setActive,
-    active,
-    examples: storeExamples,
-  } = useExamplesStore((state) => state);
+  const { setActive, active } = useExamplesStore((state) => state);
 
   const [activeItem, setActiveItem] = React.useState<string>("Home");
 
@@ -31,8 +18,6 @@ export function NavBar() {
       <MotionConfig transition={{ type: "spring", bounce: 0, duration: 0.4 }}>
         <motion.ul
           onMouseLeave={() => {
-            console.log("leaving ul");
-
             switch (active) {
               case null:
                 setActiveItem("Home");
@@ -46,8 +31,6 @@ export function NavBar() {
               default:
                 break;
             }
-
-            // setActiveItem(active);
           }}
           layout
           className="mx-auto flex w-fit gap-2 justify-center"

@@ -26,6 +26,48 @@ export default function WalletSection() {
   const [open, setOpen] = useState(false);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const { wallet, setWallet, signOut } = useMinaStore((state) => state);
+  const [toggledSignOut, setToggledSignOut] = useState(false);
+
+  useEffect(() => {
+    if (wallet.isSignedIn || toggledSignOut) {
+      return;
+    }
+
+    (async () => {
+      if (wallet.isSignedIn) {
+        return;
+      }
+
+      // @ts-ignore
+      if (typeof window.mina === "undefined") {
+        toast.warning("Mina extension not found");
+        return;
+      }
+
+      // @ts-ignore
+      let mina = window.mina;
+
+      // @ts-ignore
+      const account: string[] | ProviderError = await mina
+        .requestAccounts()
+        .catch((err: ProviderError) => err);
+
+      if (typeof account === "object" && "message" in account) {
+        setWallet({
+          isSignedIn: false,
+          address: null,
+          activeNetwork: null,
+        });
+        return;
+      }
+
+      setWallet({
+        isSignedIn: true,
+        address: account[0]!,
+        activeNetwork: "devnet",
+      });
+    })();
+  }, [wallet.isSignedIn]);
 
   const handleSignIn = useCallback(async () => {
     // @ts-ignore
@@ -56,6 +98,9 @@ export default function WalletSection() {
       toast.warning((network as ProviderError).message);
     }
 
+    setToggledSignOut(false);
+    setOpen(false);
+
     const networkName = network?.name as NetworkName;
 
     setWallet({
@@ -75,8 +120,23 @@ export default function WalletSection() {
     };
   }, [wallet.isSignedIn, isSigningIn]);
 
+  const copyAddress = useCallback(async () => {
+    if (!navigator.clipboard) {
+      return;
+    }
+
+    if (!wallet.address) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(wallet.address);
+
+    toast.success("Address copied");
+  }, [wallet.address]);
+
   const handleSignOut = useCallback(() => {
     if (wallet.isSignedIn) {
+      setToggledSignOut(true);
       signOut();
       console.log("signing out");
 
@@ -115,14 +175,17 @@ export default function WalletSection() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem className="flex items-center justify-between">
+        <DropdownMenuItem
+          onClick={copyAddress}
+          className="flex items-center justify-between"
+        >
           <CopyIcon className="mr-2 h-4 w-4" />
           Copy Address
         </DropdownMenuItem>
         <DropdownMenuItem className="flex items-center justify-between">
           <Link
             className="flex items-center gap-2 justify-between"
-            href="#"
+            href={`https://minascan.io/devnet/account/${wallet.address}`}
             rel="noopener noreferrer"
             target="_blank"
           >

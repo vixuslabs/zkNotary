@@ -11,7 +11,8 @@
     "typecheck": "turbo typecheck",
     "lint": "turbo lint",
     "postinstall": "manypkg check",
-    "build": "turbo build"
+    "build": "turbo build",
+    "build:mina": "turbo build:mina"
   },
   "engines": {
     "pnpm": "8.15.*",

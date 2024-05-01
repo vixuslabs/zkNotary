@@ -2,6 +2,9 @@
 
 **Note to Users**: Our project, zkNotary, is extensive, spanning multiple directories, each meticulously documented to aid your understanding and usage. For your convenience and a seamless navigation experience, we highly recommend visiting our comprehensive documentation hosted on Gitbook. There, you'll find an organized, user-friendly guide tailored to help you navigate through every aspect of zkNotary with ease.
 
+
+**Note to Developers**: For some reason, the [web app](https://github.com/vixuslabs/zkNotary/tree/main/o1js/app/zknotary) is not working in production. Specifically, inside of `verify.transcript.tsx` [(here)](https://github.com/vixuslabs/zkNotary/blob/main/o1js/app/zknotary/src/components/mina/verify-transcript.tsx) the `signature.verify(...)` function always returns a `false` value. The reason is currently unknown, but we suspect that it has to `next build` is working bundling local packages. So currently what you can do is clone the repo and run it locally. [Go to](#) the bottom of this readme to see how
+
 📖 Explore the zkNotary Documentation: [zkNotary Documentation on Gitbook](https://zknotary.gitbook.io/zknotary/)
 
 ## Introduction
@@ -195,11 +198,24 @@ Please refer to the README files for each of the Prover, Verifier and Parser sub
 3. [Parsers](./parsers/README.md)
 4. [AWS Deployment Script](./aws/README.md)
 
-## Future work
 
-1. Create new endpoints for the Prover in order to natively support more services such as Facebook, Reddit, etc.
 
-2. Replace the `zknotary-verifier` NPM package (which is swritten in Rust and then compiled to Web Assembly) with native o1js code capable of verifying the TLSNotary proof.
+## Run the web app locally
+
+To run the web app locally, you need to have the following installed:
+- pnpm: 8.15.*",
+- node: >=18.18.0 <19.0.0
+
+Next, clone the repo and run the following commands:
+
+```bash
+pnpm install
+pnpm build:mina
+pnpm dev
+```
+
+This will start the web app on `localhost:3000`
+
 
 ## License
 

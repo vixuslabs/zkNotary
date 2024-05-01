@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import type ZkappWorkerClient from "./zkappWorkerClient";
 import type { PublicKey as PublicKeyType } from "o1js";
 
@@ -23,7 +30,11 @@ export type SendTransactionResult = {
 };
 
 export interface TlsnVerifierActions extends TlsnVerifierContext {
-  sendTransaction: (proof: string) => Promise<SendTransactionResult>;
+  sendTransaction: (
+    proof: string,
+    zkAppWorkerClient: ZkappWorkerClient
+  ) => Promise<SendTransactionResult>;
+  handleCompileContract: () => Promise<void>;
 }
 
 const TlsnVerifierContext = createContext<TlsnVerifierActions>({
@@ -35,8 +46,11 @@ const TlsnVerifierContext = createContext<TlsnVerifierActions>({
   publicKey: null,
   zkappPublicKey: null,
   creatingTransaction: false,
-  sendTransaction: async () => {
+  sendTransaction: async (_, __) => {
     throw new Error("onSendTransaction not implemented");
+  },
+  handleCompileContract: async () => {
+    throw new Error("onCompileContract not implemented");
   },
 });
 
@@ -71,7 +85,7 @@ export default function TlsnVerifierProvider({
   // -------------------------------------------------------
   // Do Setup
 
-  useEffect(() => {
+  const handleCompileContract = useCallback(async () => {
     async function timeout(seconds: number): Promise<void> {
       return new Promise<void>((resolve) => {
         setTimeout(() => {
@@ -80,144 +94,142 @@ export default function TlsnVerifierProvider({
       });
     }
 
-    (async () => {
-      if (!state.hasBeenSetup) {
-        const { PublicKey } = await import("o1js");
-        const ZkappWorkerClient = (await import("./zkappWorkerClient")).default;
+    if (!state.hasBeenSetup) {
+      const { PublicKey } = await import("o1js");
+      const ZkappWorkerClient = (await import("./zkappWorkerClient")).default;
 
-        try {
-          console.log("Loading web worker...");
-          const zkappWorkerClient = new ZkappWorkerClient();
-          await timeout(5);
+      try {
+        console.log("Loading web worker...");
+        const zkappWorkerClient = new ZkappWorkerClient();
+        await timeout(5);
 
-          console.log("Done loading web worker");
+        console.log("Done loading web worker");
 
-          await zkappWorkerClient.setActiveInstanceToDevnet();
+        await zkappWorkerClient.setActiveInstanceToDevnet();
 
-          const mina = (window as any).mina;
+        const mina = (window as any).mina;
 
-          if (mina == null) {
-            setState({ ...state, hasWallet: false });
-            return;
-          }
-
-          const publicKeyBase58: string = (await mina.requestAccounts())[0];
-          const publicKey = PublicKey.fromBase58(publicKeyBase58);
-
-          console.log(`Using key:${publicKey.toBase58()}`);
-          console.log("Checking if fee payer account exists...");
-
-          const res = await zkappWorkerClient.fetchAccount({
-            publicKey: publicKey!,
-          });
-          const accountExists = res.error == null;
-
-          await zkappWorkerClient.loadContract();
-
-          console.log("Compiling zkApp...");
-          await zkappWorkerClient.compileContract();
-          console.log("zkApp compiled");
-
-          const zkappPublicKey = PublicKey.fromBase58(ZKAPP_ADDRESS);
-
-          await zkappWorkerClient.initZkappInstance(zkappPublicKey);
-
-          console.log("Getting zkApp state...");
-
-          await zkappWorkerClient.fetchAccount({ publicKey: zkappPublicKey });
-          const notaryPublicKey = await zkappWorkerClient.getNotaryPublicKey();
-
-          console.log(`Current state in zkApp: ${notaryPublicKey.toBase58()}`);
-
-          setState({
-            ...state,
-            zkappWorkerClient,
-            hasWallet: true,
-            hasBeenSetup: true,
-            publicKey,
-            zkappPublicKey,
-            accountExists,
-            notaryPublicKey,
-          });
-        } catch (e) {
-          console.error(e);
-          setState({ ...state, creatingTransaction: false });
-          throw new Error("Error setting up TLSN verifier");
+        if (mina == null) {
+          setState({ ...state, hasWallet: false });
+          return;
         }
+
+        const publicKeyBase58: string = (await mina.requestAccounts())[0];
+        const publicKey = PublicKey.fromBase58(publicKeyBase58);
+
+        console.log(`Using key:${publicKey.toBase58()}`);
+        console.log("Checking if fee payer account exists...");
+
+        const res = await zkappWorkerClient.fetchAccount({
+          publicKey: publicKey!,
+        });
+        const accountExists = res.error == null;
+
+        await zkappWorkerClient.loadContract();
+
+        console.log("Compiling zkApp...");
+        await zkappWorkerClient.compileContract();
+        console.log("zkApp compiled");
+
+        const zkappPublicKey = PublicKey.fromBase58(ZKAPP_ADDRESS);
+
+        await zkappWorkerClient.initZkappInstance(zkappPublicKey);
+
+        console.log("Getting zkApp state...");
+
+        await zkappWorkerClient.fetchAccount({ publicKey: zkappPublicKey });
+        const notaryPublicKey = await zkappWorkerClient.getNotaryPublicKey();
+
+        console.log(`Current state in zkApp: ${notaryPublicKey.toBase58()}`);
+
+        console.log({
+          zkappWorkerClient,
+          hasWallet: true,
+          hasBeenSetup: true,
+          publicKey,
+          zkappPublicKey,
+          accountExists,
+          notaryPublicKey,
+        });
+
+        setState({
+          ...state,
+          zkappWorkerClient,
+          hasWallet: true,
+          hasBeenSetup: true,
+          publicKey,
+          zkappPublicKey,
+          accountExists,
+          notaryPublicKey,
+        });
+      } catch (e) {
+        console.error(e);
+        setState({ ...state, creatingTransaction: false });
+
+        throw new Error("Error setting up TLSN verifier");
       }
-    })();
-  }, []);
+    }
+  }, [state.hasBeenSetup]);
 
-  // -------------------------------------------------------
-  // Wait for account to exist, if it didn't
+  const sendTransaction = useCallback(
+    async (
+      proof: string,
+      zkappWorkerClient: ZkappWorkerClient
+    ): Promise<SendTransactionResult> => {
+      console.log("state", state);
 
-  // useEffect(() => {
-  //   (async () => {
-  //     if (state.hasBeenSetup && !state.accountExists) {
-  //       for (;;) {
-  //         setDisplayText("Checking if fee payer account exists...");
-  //         console.log("Checking if fee payer account exists...");
-  //         const res = await state.zkappWorkerClient!.fetchAccount({
-  //           publicKey: state.publicKey!,
-  //         });
-  //         const accountExists = res.error == null;
-  //         if (accountExists) {
-  //           break;
-  //         }
-  //         await new Promise((resolve) => setTimeout(resolve, 5000));
-  //       }
-  //       setState({ ...state, accountExists: true });
-  //     }
-  //   })();
-  // }, [state.hasBeenSetup]);
+      setState({ ...state, creatingTransaction: true });
 
-  // -------------------------------------------------------
-  // Send a transaction
+      console.log("Creating a transaction...");
 
-  const sendTransaction = async (
-    proof: string
-  ): Promise<SendTransactionResult> => {
-    setState({ ...state, creatingTransaction: true });
+      console.log("state", state);
 
-    console.log("Creating a transaction...");
+      await zkappWorkerClient!.fetchAccount({
+        publicKey: state.publicKey!,
+      });
 
-    console.log("state", state);
+      await zkappWorkerClient!.createVerifySignatureTransaction(proof);
 
-    await state.zkappWorkerClient!.fetchAccount({
-      publicKey: state.publicKey!,
-    });
+      console.log("Creating proof...");
+      await zkappWorkerClient!.proveUpdateTransaction();
 
-    await state.zkappWorkerClient!.createVerifySignatureTransaction(proof);
+      console.log("Requesting send transaction...");
+      const transactionJSON = await zkappWorkerClient!.getTransactionJSON();
 
-    console.log("Creating proof...");
-    await state.zkappWorkerClient!.proveUpdateTransaction();
+      console.log("Getting transaction JSON...");
+      const { hash } = await (window as any).mina.sendTransaction({
+        transaction: transactionJSON,
+        feePayer: {
+          fee: transactionFee,
+          memo: "",
+        },
+      });
 
-    console.log("Requesting send transaction...");
-    const transactionJSON = await state.zkappWorkerClient!.getTransactionJSON();
+      const transactionLink = `https://minascan.io/devnet/tx/${hash}`;
+      console.log(`View transaction at ${transactionLink}`);
 
-    console.log("Getting transaction JSON...");
-    const { hash } = await (window as any).mina.sendTransaction({
-      transaction: transactionJSON,
-      feePayer: {
-        fee: transactionFee,
-        memo: "",
-      },
-    });
+      setState({ ...state, creatingTransaction: false });
 
-    const transactionLink = `https://devnet.minaexplorer.com/transaction/${hash}`;
-    console.log(`View transaction at ${transactionLink}`);
-
-    setState({ ...state, creatingTransaction: false });
-
-    return { transactionLink, hash };
-  };
+      return { transactionLink, hash };
+    },
+    [state.zkappWorkerClient]
+  );
 
   const value = useMemo(() => {
     return {
       ...state,
       sendTransaction,
+      handleCompileContract,
     };
-  }, [state]);
+  }, [
+    state.zkappPublicKey,
+    state.zkappWorkerClient,
+    state.hasBeenSetup,
+    state.notaryPublicKey,
+    state.accountExists,
+    sendTransaction,
+    handleCompileContract,
+  ]);
 
   return (
     <TlsnVerifierContext.Provider value={value}>

@@ -5,13 +5,10 @@ import MainSectionContainer from "@/components/main-section";
 import { ExamplesProvider } from "@/components/providers/examples-provider";
 
 import WalletSection from "@/components/mina/wallet-section";
-import { ThemeModeToggle } from "@/components/home/theme-toggle";
 import MinaEventHandler from "@/components/mina/mina-event-handler";
-import TlsnVerifierProvider from "@/mina/tlsn-verifier-provider";
 
 export default function Home() {
   return (
-    // <TlsnVerifierProvider>
     <ExamplesProvider>
       <MinaEventHandler />
       <div className="flex flex-col min-h-screen">
@@ -31,6 +28,5 @@ export default function Home() {
         </footer>
       </div>
     </ExamplesProvider>
-    // </TlsnVerifierProvider>
   );
 }

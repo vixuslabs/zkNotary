@@ -5,16 +5,14 @@ const nextConfig = {
     config.experiments = {
       ...config.experiments,
       topLevelAwait: true,
-      syncWebAssembly: true,
-      // asyncWebAssembly: true,
+      // syncWebAssembly: true,
+      asyncWebAssembly: true,
     };
 
     return config;
   },
 
   transpilePackages: ["@zknotary/contracts", "zknotary-verifier"],
-
-  swcMinify: false,
 
   async headers() {
     return [
