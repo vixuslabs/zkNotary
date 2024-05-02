@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useExamplesStore } from "@/stores/examples-store";
 import { MotionConfig, motion } from "framer-motion";
 
@@ -11,7 +11,7 @@ const navBarExamples = ["Home", "Github", "Etherscan"];
 export function NavBar() {
   const { setActive, active } = useExamplesStore((state) => state);
 
-  const [activeItem, setActiveItem] = React.useState<string>("Home");
+  const [activeItem, setActiveItem] = useState<string>("Home");
 
   return (
     <div className="flex gap-x-4 items-center justify-center">
