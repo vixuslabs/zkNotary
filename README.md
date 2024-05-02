@@ -2,8 +2,7 @@
 
 **Note to Users**: Our project, zkNotary, is extensive, spanning multiple directories, each meticulously documented to aid your understanding and usage. For your convenience and a seamless navigation experience, we highly recommend visiting our comprehensive documentation hosted on Gitbook. There, you'll find an organized, user-friendly guide tailored to help you navigate through every aspect of zkNotary with ease.
 
-
-**Note to Developers**: For some reason, the [web app](https://github.com/vixuslabs/zkNotary/tree/main/o1js/app/zknotary) is not working in production. Specifically, inside of `verify.transcript.tsx` [(here)](https://github.com/vixuslabs/zkNotary/blob/main/o1js/app/zknotary/src/components/mina/verify-transcript.tsx) the `signature.verify(...)` function always returns a `false` value. The reason is currently unknown, but we suspect that it has to `next build` is working bundling local packages. So currently what you can do is clone the repo and run it locally. [Go to](#) the bottom of this readme to see how
+**Note to Developers**: For some reason, the [web app](https://github.com/vixuslabs/zkNotary/tree/main/o1js/app/zknotary) is not working in production. Specifically, inside of the `verify.transcript.tsx` foudn [here](https://github.com/vixuslabs/zkNotary/blob/main/o1js/app/zknotary/src/components/mina/verify-transcript.tsx) the `signature.verify(...)` function always returns a `false` value. The reason is currently unknown, but we suspect that it has to do with how our monorepo is being built and causes it to corrupt the `@zknotary/contracts` [package](https://github.com/vixuslabs/zkNotary/tree/main/o1js/contracts/contracts). So currently what you can do is clone the repo and run it locally. [Go to](#run-the-web-app-locally) the bottom of this README to see how.
 
 📖 Explore the zkNotary Documentation: [zkNotary Documentation on Gitbook](https://zknotary.gitbook.io/zknotary/)
 
@@ -199,22 +198,48 @@ Please refer to the README files for each of the Prover, Verifier and Parser sub
 4. [AWS Deployment Script](./aws/README.md)
 
 
-
 ## Run the web app locally
 
+Our web app has two examples:
+- Github: Fetching all of a user's commits from a public repository.
+- Etherscan: Get a user's ERC-20 token balance from a deployed smart contract.
+
+### Web App
 To run the web app locally, you need to have the following installed:
-- pnpm: 8.15.*",
+- pnpm: 8.15.*,
 - node: >=18.18.0 <19.0.0
 
-Next, clone the repo and run the following commands:
+Next, run the following commands:
 
 ```bash
+git clone https://github.com/vixuslabs/zkNotary.git
+cd zkNotary
 pnpm install
 pnpm build:mina
 pnpm dev
 ```
-
 This will start the web app on `localhost:3000`
+
+### Notary Server
+If you would like to spin up your own notary server using our forked version of the tlsn notary server, found [here](), you can do so. 
+
+You will need to have `cargo` installed. If you do not, the instructions do so are can be found [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
+
+To spin up the notary server, run the following commands:
+
+```bash
+git clone https://github.com/vixuslabs/tlsn
+cd tlsn/notary-server
+cargo run --release -- --config-file config/mina-config.yaml
+```
+
+Then within this repository, go to `o1js/app/zknotary/src/server/actions`. Then within both `notarize_etherscan.ts` and `notarize_github.ts`, change the value of the `NOTARY_PROVIDER_HOST` by hard coding the value their directly, or add it to the `.env` inside of `o1js/app/zknotary`.
+
+⚠️ Our implementation of notary-server is not meant to be used in production, and is already outdated from tlsn's `tlsn` repository.
+
+### Provers
+Last part of the set up is to spin up the [provers](https://github.com/vixuslabs/zkNotary/tree/main/provers). The instructions can be found within the directory.
+
 
 
 ## License
