@@ -218,7 +218,7 @@ export default function GithubNotarizationForm() {
           )}
         />
         <Button disabled={isFetching} type="submit">
-          Submit
+          Notarize
         </Button>
       </form>
     </Form>

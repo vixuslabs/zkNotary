@@ -78,6 +78,8 @@ export default function EtherscanForm() {
 
           let verifiedData = verify(json_data, NOTARY_PUB_KEY);
 
+          console.log("verifiedData", verifiedData);
+
           setVerifiedData(verifiedData, "etherscan");
 
           return "Data Notarized Successfully! Check formatted and Raw Data Tabs for more info.";
@@ -127,7 +129,7 @@ export default function EtherscanForm() {
           )}
         />
         <Button disabled={isFetching} type="submit">
-          Submit
+          Notarize
         </Button>
       </form>
     </Form>

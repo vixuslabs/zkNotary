@@ -11,7 +11,8 @@
     "typecheck": "turbo typecheck",
     "lint": "turbo lint",
     "postinstall": "manypkg check",
-    "build": "turbo build"
+    "build": "turbo build",
+    "build:mina": "turbo build:mina"
   },
   "engines": {
     "pnpm": "8.15.*",
@@ -24,7 +25,7 @@
     "@turbo/gen": "1.13.2",
     "@types/json-stable-stringify": "^1.0.36",
     "@types/node": "^20.10.0",
-    "next": "14.2.2",
+    "prettier": "^3.1.0",
     "turbo": "1.13.2",
     "typescript": "^5.3.2"
   }

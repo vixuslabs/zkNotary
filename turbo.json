@@ -1,0 +1,37 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+     "topo": {
+       "dependsOn": ["^topo"]
+     },
+    "build": {
+      "dependsOn": ["^typecheck", "^build"],
+      "env": ["NOTARY_PROVER_HOST"],
+      "outputs": [".next/**", "!.next/cache/**", ".output/**", ".vercel/output/**"]
+    },
+    "build:mina": {
+      "dependsOn": ["^topo"]
+    },
+    "start": {
+      "dependsOn": ["^topo"],
+      "outputs": [".next/**", "!.next/cache/**", ".output/**", ".vercel/output/**"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "typecheck": {
+      "dependsOn": ["^topo"],
+      "outputs": ["node_modules/.cache/tsbuildinfo.json"]
+    },
+    "clean": {
+      "cache": false
+    },
+    "//#clean": {
+      "cache": false
+    }
+  }
+}

@@ -28,7 +28,7 @@ export default function RootLayout({
         >
           <MinaProvider>
             {children}
-            <Toaster />
+            <Toaster closeButton />
           </MinaProvider>
         </ThemeProvider>
       </body>

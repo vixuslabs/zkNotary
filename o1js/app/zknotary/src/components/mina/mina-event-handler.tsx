@@ -24,6 +24,9 @@ export default function MinaEventHandler() {
         signOut();
       } else if (wallet.isSignedIn) {
         setWallet({ ...wallet, address: accounts[0] });
+      } else {
+        // @ts-expect-error
+        setWallet({ ...wallet, address: accounts[0], isSignedIn: true });
       }
     });
 
@@ -40,7 +43,7 @@ export default function MinaEventHandler() {
 
       setWallet({ ...wallet, activeNetwork: chainName });
     });
-  }, []);
+  }, [wallet]);
 
   return null;
 }

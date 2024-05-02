@@ -17,11 +17,9 @@
     "incremental": true,
     "noUncheckedIndexedAccess": true,
     "experimentalDecorators": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["apps/zknotary/src/*"]
-    },
-    "plugins": [{ "name": "next" }]
+      "@/*": ["o1js/app/zknotary/src/*"]
+    }
   },
   "include": [
     ".eslintrc.cjs",

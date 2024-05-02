@@ -1,6 +1,8 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
+        "tsBuildInfoFile": "build/tsconfig.tsbuildinfo",
+        "incremental": true,
         "target": "es2022",
         "module": "es2022",
         "lib": ["dom", "esnext"],
@@ -21,4 +23,5 @@
         "allowSyntheticDefaultImports": true
     },
     "include": ["./src"],
+    "exclude": ["node_modules"]
 }
