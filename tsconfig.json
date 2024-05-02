@@ -18,7 +18,7 @@
     "noUncheckedIndexedAccess": true,
     "experimentalDecorators": true,
     "paths": {
-      "@/*": ["o1js/app/zknotary/src/*"]
+      "@/*": ["./o1js/app/zknotary/src/*"]
     }
   },
   "include": [
