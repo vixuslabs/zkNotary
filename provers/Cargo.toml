@@ -14,7 +14,7 @@ actix-web = "4.0"
 # tlsn-tls-client = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
 # notary-server = { git = "https://github.com/tlsnotary/tlsn", branch = "dev" }
 
-tlsn-prover = { git = "https://github.com/vixuslabs/tlsn" features = ["tracing"] }
+tlsn-prover = { git = "https://github.com/vixuslabs/tlsn", features = ["tracing"] }
 tlsn-verifier = { git = "https://github.com/vixuslabs/tlsn" } 
 tlsn-core = { git = "https://github.com/vixuslabs/tlsn"}
 tlsn-tls-core = { git = "https://github.com/vixuslabs/tlsn"}
