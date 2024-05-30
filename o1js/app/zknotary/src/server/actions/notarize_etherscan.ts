@@ -1,8 +1,8 @@
 "use server";
 
-import { RootSchemaValuesType } from "@/lib/proof_types";
-
 // Etherscan notarization
+
+import { RootSchemaValuesType } from "@/lib/proof_types";
 
 export type ServiceNames = "github" | "etherscan";
 
@@ -13,7 +13,7 @@ export type NotaryEtherscanArgs = {
 
 //const NOTARY_SERVER_HOST = process.env.NOTARY_PROVER_HOST!;
 // const NOTARY_SERVER_HOST = "127.0.0.1";
-const NOTARY_SERVER_HOST = "54.83.188.45";
+const NOTARY_SERVER_HOST = "3.80.121.167";
 const NOTARY_SERVER_PORT = 8080;
 
 export async function notarize_etherscan(args: NotaryEtherscanArgs) {
@@ -23,22 +23,11 @@ export async function notarize_etherscan(args: NotaryEtherscanArgs) {
 
   let response = await fetch(url);
 
-  console.log(response);
-
   let jsonData = (await response.json()) as RootSchemaValuesType;
+
+  // console.log("jsonData", jsonData);
 
   return {
     data: jsonData,
   };
 }
-
-// function cleanAndParseRawData(rawData: string): string {
-//   // Remove escape characters
-//   let cleanedData = rawData.replace(/\\r/g, "");
-//   cleanedData = cleanedData.replace(/\\n/g, "\n");
-//
-//   // Replace escaped double quotes with normal double quotes
-//   cleanedData = cleanedData.replace(/\\"/g, '"');
-//
-//   return cleanedData;
-// }

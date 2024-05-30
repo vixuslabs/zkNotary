@@ -104,11 +104,6 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     // Spawn the HTTP task to be run concurrently
     let connection_task = tokio::spawn(connection.without_shutdown());
 
-    // let formatted_uri = format!(
-    //     "https://{}/{}/{}/{}/commits?since={}&until={}&page=1",
-    //     SERVER_DOMAIN, ROUTE, username, repo, since, until
-    // );
-
     let formatted_uri = format!(
         "https://{}/{}/{}/{}/commits?page=1&since={}&until={}&per_page=1",
         SERVER_DOMAIN, ROUTE, username, repo, since, until
@@ -120,14 +115,10 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
     let request = Request::builder()
         .uri(formatted_uri)
         .header("Host", SERVER_DOMAIN)
-        // .header("Accept", "*/*")
-        // .header("Accept-Language", "en-US,en;q=0.5")
-        // .header("Accept-Encoding", "identity")
         .header("Accept", "*/*")
         .header("X-GitHub-Api-Version", "2022-11-28")
         .header("Accept_Encoding", "gzip, deflate, br")
         .header("User-Agent", "zkNotary")
-        // .header("Connection", "close")
         .header("Authorization", auth_header)
         .body(Empty::<Bytes>::new())
         .unwrap();
@@ -147,18 +138,6 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
 
     debug!("Request OK");
     println!("Got a response from the Github server");
-
-    // Pretty printing :)
-    // let payload = response.into_body().collect().await.unwrap().to_bytes();
-    // let payload = response.into_body().collect().await.unwrap();
-    // let parsed =
-    //     serde_json::from_str::<serde_json::Value>(&String::from_utf8_lossy(&payload)).unwrap();
-    // debug!("{}", serde_json::to_string_pretty(&parsed).unwrap());
-
-    // Close the connection to the server
-    // let mut client_socket = connection_task.await.unwrap().unwrap().io.into_inner();
-    // client_socket.shutdown().await.unwrap();
-    // print!("Closed the connection to the Github server");
 
     // The Prover task should be done now, so we can grab it.
     let prover = prover_task.await.unwrap().unwrap();
@@ -210,14 +189,7 @@ pub async fn notarize(query_params: web::Query<QueryParams>) -> impl Responder {
 
     let json_proof = serde_json::json!(true_proof);
 
-    // let readable_proof = format(json_proof).unwrap();
-
     let res = serde_json::json!(json_proof);
-
-    // let res = serde_json::json!({
-    //   "proof": true_proof,
-    //   "readable_proof": readable_proof
-    // });
 
     println!("Closing the connection to the Github server");
     let mut client_socket = connection_task.await.unwrap().unwrap().io.into_inner();
