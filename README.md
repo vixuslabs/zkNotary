@@ -1,6 +1,9 @@
 # zkNotary: a zkOracle for Mina powered by TLSNotary
 
-**Note to Builders**: We have written an article explaning, in technical terms, the most relevant parts of our code, the current state of the project and what needs to be done to push it forward. The write up can be found here: https://hackmd.io/@racampos/zknotary_status. 
+<center>
+  **We have written an article explaning, in technical terms, the most relevant parts of our code, the current state of the project and what needs to be done to push it forward. The write up can be found here: https://hackmd.io/@racampos/zknotary_status.**
+</center>
+
 
 **Note to Users**: Our project, zkNotary, is extensive, spanning multiple directories, each meticulously documented to aid your understanding and usage. For your convenience and a seamless navigation experience, we highly recommend visiting our comprehensive documentation hosted on Gitbook. There, you'll find an organized, user-friendly guide tailored to help you navigate through every aspect of zkNotary with ease.
 
