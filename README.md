@@ -197,16 +197,18 @@ Please refer to the README files for each of the Prover, Verifier and Parser sub
 3. [Parsers](./parsers/README.md)
 4. [AWS Deployment Script](./aws/README.md)
 
-
 ## Run the web app locally
 
 Our web app has two examples:
+
 - Github: Fetching all of a user's commits from a public repository.
 - Etherscan: Get a user's ERC-20 token balance from a deployed smart contract.
 
 ### Web App
+
 To run the web app locally, you need to have the following installed:
-- pnpm: 8.15.*,
+
+- pnpm: 8.15.\*,
 - node: >=18.18.0 <19.0.0
 
 Next, run the following commands:
@@ -218,10 +220,12 @@ pnpm install
 pnpm build:mina
 pnpm dev
 ```
+
 This will start the web app on `localhost:3000`
 
 ### Notary Server
-If you would like to spin up your own notary server using our forked version of the tlsn notary server, found [here](), you can do so. 
+
+If you would like to spin up your own notary server using our forked version of the tlsn notary server, found [here](https://github.com/vixuslabs/tlsn), you can do so.
 
 You will need to have `cargo` installed. If you do not, the instructions do so are can be found [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
@@ -238,9 +242,8 @@ Then within this repository, go to `o1js/app/zknotary/src/server/actions`. Then 
 ⚠️ Our implementation of notary-server is not meant to be used in production, and is already outdated from tlsn's `tlsn` repository.
 
 ### Provers
+
 Last part of the set up is to spin up the [provers](https://github.com/vixuslabs/zkNotary/tree/main/provers). The instructions can be found within the directory.
-
-
 
 ## License
 
