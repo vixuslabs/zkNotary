@@ -1,6 +1,8 @@
 # zkNotary: a zkOracle for Mina powered by TLSNotary
 
-**We have written an article explaning, in technical terms, the most relevant parts of our code, the current state of the project and what needs to be done to push it forward. The write up can be found here: https://hackmd.io/@racampos/zknotary_status.**
+<h4 align="center">
+        We have written an article explaining, in technical terms, the most relevant parts of our code, the current state of the project, and what needs to be done to push it forward. The write-up can be found here: <a href="https://hackmd.io/@racampos/zknotary_status">https://hackmd.io/@racampos/zknotary_status</a>.
+</h4>
 
 ---
 
